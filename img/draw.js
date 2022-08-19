@@ -1,9 +1,14 @@
 // draw each frame i need
 // set canvas and ctx  
 // use b canvas to create game object
-const canvasA = document.getElementById('a')
-const ctxA = canvasA.getContext('2d')
+GetCanvas=a=>document.getElementById(a)
+GetContext=a=>a.getContext('2d',{
+    alpha: false,
+    desynchronized: true
+})
 
+const canvas = GetCanvas('a')
+const ctx = GetContext(canvas)
 
 //Sence Frame
 PauseGame=_=>{
@@ -29,5 +34,9 @@ Blink=_=>{
 }
 // UI
 UI=_=>{
-
+    // canvas.width = canvas.height = size * unit;
+    let w = canvas.width
+    let h = canvas.height
+    ctx.fillStyle="#F1F"
+    ctx.fillRect(0,0,w,h)
 }
