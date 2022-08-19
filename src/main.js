@@ -21,6 +21,7 @@ Set=_=>{
 }
 
 MainLoop=_=>{
+    UI()
     requestAnimationFrame(MainLoop)
 }
 
@@ -29,33 +30,30 @@ MainLoop=_=>{
 window.addEventListener("blur", e => console.log(e));
 window.addEventListener("focus", e => console.log(e));
 
-canvasA.addEventListener("mousedown", e => console.log(e));
-canvasA.addEventListener("mouseup", e => console.log(e));
+canvas.addEventListener("mousedown", e => console.log(e));
+canvas.addEventListener("mouseup", e => console.log(e));
 
-canvasA.addEventListener("touchstart", e => console.log(e));
-canvasA.addEventListener("touchend", e => console.log(e));
+canvas.addEventListener("touchstart", e => console.log(e));
+canvas.addEventListener("touchend", e => console.log(e));
 
-document.addEventListener("keydown", e => {
-    if (e.repeat) {
-        return;
-    }
-    if (e.key === " ") {
-        console.log(e)
-    }
-    if (e.key === "Escape") {
-        console.log(e)
-    } else {
-        console.log(e)
-    }
-});
+onkeydown=e=>{
+    const i = e.key
 
-document.addEventListener("keyup", (e) => {
-    if (e.repeat) {
-        return;
-    }
+    console.log(e)
+}
+onkeyup=e=>{
+    const i = e.key
 
-    if (e.key === " ") {
-        input.action = false;
-    }
-});
+    console.log(e)
+}
+
+// Canvas resizing
+const resize = () => {
+    const unit = 32;
+    const size = Min((Min(window.innerWidth, window.innerHeight) / unit)|0, 24);
+    canvas.width = canvas.height = size * unit;
+    ctx.imageSmoothingEnabled = false;
+};
+window.addEventListener("resize", resize);
+
 MainLoop()
