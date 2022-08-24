@@ -1,4 +1,6 @@
 // utils function
+const PI = Math.PI
+
 Rand=a=>Math.random()*a
 RandInt=a=>Rand(a)|0;
 RandIntBetween=(a,b)=>a+RandInt(b-a+1);
@@ -20,8 +22,17 @@ Set=_=>{
 
 }
 
+let lastUpdate = performance.now();
+Update=_=>{
+    const now = performance.now();
+    const deltaMs = now - lastUpdate;
+    const delta = deltaMs / 1000;
+    lastUpdate = now;
+}
 MainLoop=_=>{
     UI()
+    rect(20,30,50,50)
+    
     requestAnimationFrame(MainLoop)
 }
 
@@ -51,9 +62,10 @@ onkeyup=e=>{
 const resize = () => {
     const unit = 32;
     const size = Min((Min(window.innerWidth, window.innerHeight) / unit)|0, 24);
-    canvas.width = canvas.height = size * unit;
+    canvas.width = size * unit;
+    canvas.height = window.innerHeight-50;
     ctx.imageSmoothingEnabled = false;
 };
 window.addEventListener("resize", resize);
-
+resize()
 MainLoop()
