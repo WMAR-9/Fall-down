@@ -135,29 +135,35 @@ ctx.stroke();*/
         ctx.quadraticCurveTo(k, k + d / 2, k, k + d / 4);
         ctx.stroke()
         */
+        ContextSave=c=>c.save()
+ContextRestore=c=>c.restore()
+ContextStroke=c=>c.stroke()
+ContextFill=c=>c.fill()
+ContextBeginPath=c=>c.beginPath()
+ContextClosePath=c=>c.closePath()
 
-ScaleLine=(x,y,h)=>{
-ctx.save()
-ctx.beginPath()
-ctx.setLineDash([2]);
+
+ScaleLine=(x,y,gh,h=200)=>{
+ContextSave(ctx)
+ContextBeginPath(ctx)
+ctx.setLineDash([1]);
 ctx.moveTo(x,y)
-ctx.lineTo(x,y+200)
-ctx.stroke()
-ctx.restore()
-ctx.beginPath()
-ctx.setLineDash([0]);
-ctx.lineWidth = 5;
+ctx.lineTo(x,y+h)
+ContextStroke(ctx)
+ContextRestore(ctx)
+ContextBeginPath(ctx)
+ctx.lineWidth = 3
 ctx.lineCap = 'round';
 ctx.strokeStyle="#000"
-for(i=0;i<=200;i+=h){
- ctx.moveTo(x-h/2,y+i)
- ctx.lineTo(x+h/2,y+i)
+for(i=0;i<=h;i+=gh*2){
+ ctx.moveTo(x-gh/2,y+i)
+ ctx.lineTo(x+gh/2,y+i)
 }
-ctx.stroke()
-ctx.closePath()
-ctx.restore()
+ContextStroke(ctx)
+ContextClosePath(ctx)
+ContextRestore(ctx)
 }
-ScaleLine(200,100,50)
+ScaleLine(20,200,20)
 </script>
 
 </body>
