@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="myCanvas" width="300" height="300" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+<p></p>
+<canvas id="A" style="border:1px solid #d3d3d3;">
+
+Your browser does not support the HTML5 canvas tag.</canvas>
+<canvas id="B" style="border:1px solid #d3d3d3;"></canvas>
+<canvas id="C" style="border:1px solid #d3d3d3;"></canvas>
+<script>
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+//ctx.font = "40px Arial";
+var txt = "A"
+ctx.font ="30px Impact"; 
+ctx.fillText("WIDTH:" + ctx.measureText(txt), 10, 50);
+//ctx.fillText(txt, 0, 100);
+console.log(ctx.measureText(txt))
+ctx.fillRect(10,50,20,20)
+txt ="ABCDEFGHIJHKL"
+ctx.fillText(txt, 5, 100);
+txt ="MNOPQRSTUVWXYZ"
+ctx.fillText(txt, 5, 130);
+rect=(x,y,w,h,c="red",r=5)=>{
+    ctx.save()
+    ctx.fillStyle="#aA4"
+    ctx.beginPath()
+    ctx.miterLimit=30
+    ctx.lineWidth=2
+    ctx.lineJoin = "miter";
+    ctx.moveTo(x, y)
+    ctx.lineTo(x+w, y)
+    ctx.arcTo(x+w+r, y, x+w+r, y+r, r)
+    ctx.lineTo(x+w+r,y+h+r)
+    ctx.arcTo(x+w+r,y+h+r+r,x+w,y+h+r+r,r)
+    ctx.lineTo(x,y+h+r+r)
+    ctx.arcTo(x-r,y+h+r+r,x-r,y+h+r,r)
+    ctx.lineTo(x-r,y+r)
+    ctx.arcTo(x-r,y,x,y,r)
+    ctx.globalAlpha=.5
+    ctx.fill()
+    // for(var i=0;i<(x+w)/5+(y+r+h)/5;i++){
+
+    // }
+    ctx.restore()
+}
+
+</script>
+
+<script>
+var c = document.getElementById("A");
+var ctxa = c.getContext("2d");
+let asdf = ctx.measureText("A").width
+c.height=asdf*10
+rect(80,30,100,100,0,80)
+c.width=asdf*10
+ctx.fillStyle="#0FF"
+var i=j=0
+//for(i=0;i<3;i++){
+//	ctxa.moveTo(i*(asdf*10)/3,0)
+//    ctxa.lineTo(i*(asdf*10)/3,c.height)
+//	for(j=0;j<3;j++){
+//     ctxa.moveTo(0,j*(asdf*10)/3)
+//     ctxa.lineTo(c.width,j*(asdf*10)/3)
+//    }
+//}
+ctx.font = (200)+"px sans-serif";
+//ctx.globalCompositeOperation="source-atop"
+ctx.fillText("Q",50,30+180)
+ctx=ctxa
+ctxa.stroke()
+ctxa.fillStyle = "#110"
+//for(i=0;i<30;i++){
+//	ctxa.moveTo(i*(asdf*2)/3,0)
+//    ctxa.lineTo(i*(asdf*2)/3,c.height)
+//	for(j=0;j<30;j++){
+//     ctxa.moveTo(0,j*(asdf*2)/3)
+//     ctxa.lineTo(c.width,j*(asdf*2)/3)
+ //   }
+//}
+//
+line=(ctx,x,y)=>{
+	ctx.lineTo(x,y);
+}
+
+var x=y=0
+var th=h= c.height
+var tw=w= c.width
+c.height = 83
+var tx=ty=c=0
+let limitLine=30
+ctx.lineWidth=1
+for(i=0;i<limitLine;i++){
+    tw-=w/limitLine
+    ty+=h/limitLine
+    ctxa.moveTo(tx,ty)
+    line(ctxa,tw,th)
+}
+ty=0
+tw=w
+for(i=0;i<limitLine;i++){
+	ctxa.moveTo(tx,ty)
+    line(ctxa,tw,th)
+    th-=h/limitLine
+    tx+=w/limitLine
+    
+}
+
+tx=0
+ty=h
+th=0
+tw=w
+for(i=0;i<limitLine;i++){
+    th+=h/limitLine
+    tx+=w/limitLine
+    ctxa.moveTo(tx,ty)
+    line(ctxa,tw,th)
+}
+tx=0
+ty=h
+th=0
+tw=w
+for(i=0;i<limitLine;i++){
+    ctxa.moveTo(tx,ty)
+    line(ctxa,tw,th)
+    ty-=h/limitLine
+    tw-=w/limitLine
+}
+tx=0
+ty=0
+for(i=0;i<10;i++){
+     
+     //th=h
+    // tw-=w/50
+     //ty+=h/50
+     //ty+=h/50
+    //ctxa.moveTo(tx,ty)
+    //line(ctxa,tw,th)
+    
+}
+ctxa.strokeStyle="#020"
+ctxa.stroke()
+//ctxa.globalCompositeOperation="destination-atop"
+ctx=ctxa
+//rect(55,10,40,80,5,30)
+ctxa.globalCompositeOperation="destination-out"
+
+//ctx.fillStyle = "#FA0"
+
+ctx.font = "bold "+100+"px Impact";
+//ctx.fillText("QABCDEFG",52,70)
+//ctx.fillText("G",30,110)
+ctx.beginPath()
+let a = ctx.strokeText("A",0,83-1)
+//ctx.font = "bold "+50+"px Impact";
+const metrics = ctx.measureText("G");
+const fontHeight =
+  metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+const actualHeight =
+  metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+//ctx.fillText(metrics.fontBoundingBoxDescent,55,85)
+var fogCanvas = document.createElement('canvas')
+var context1 = fogCanvas.getContext('2d');
+let ate = "Impact"//Ink Free, Segoe Script, 
+let sdt= 30
+
+context1.font = "bold "+sdt+"px "+ate;
+context1.save()
+let stext = "🚪"//
+/*
+🗿	🗽	🗼	🏰	🏯	🏟	🎡	🎢	🎠	⛲️	⛱	🏖	🏝	🏜	🌋	⛰	🏔	🗻	🏕	⛺️	🛖	🏠	🏡	🏘	🏚	🏗
+🏭	🏢	🏬	🏣	🏤	🏥	🏦	🏨	🏪	🏫	🏩	💒	🏛	⛪️	🕌	🕍	🛕	🕋	⛩	🛤	🛣	🗾	🎑	🏞	🌅	🌄	🌠	🎇	🎆	🌇	🌆	🏙
+🌃	🌌	🌉	🌁	️	📱	📲	💻	⌨️	🖥	🖨	🖱	🖲	🕹	🗜	💽	💾	💿	📀	📼	📷	
+
+*/
+//context1.strokeText("G",0,canvasHeight)
+let metricsa = context1.measureText(stext);
+const canvasWidth =  metricsa.width
+
+const canvasHeight =  metricsa.actualBoundingBoxAscent + metricsa.actualBoundingBoxDescent;
+fogCanvas.width = canvasWidth*2;
+fogCanvas.height = canvasHeight;
+console.log(metricsa)
+console.log(canvasHeight,canvasWidth)
+context1.restore()
+
+context1.font = "bold "+sdt+"px "+ate;
+context1.save()
+c = document.getElementById("B");
+context1.scale(-1,1)
+context1.translate(-canvasWidth,0)
+context1.strokeText(stext,0,canvasHeight-metricsa.actualBoundingBoxDescent)
+//context1.setTransform(1, 0, 0, 1, 0, 0);
+//context1.strokeText(stext,0,canvasHeight-metricsa.actualBoundingBoxDescent)
+//context1.fillStyle="#f3A"
+//context1.fillRect(0,0,canvasWidth,canvasHeight)
+let data = context1.getImageData(0,0,canvasWidth,canvasHeight).data
+//console.log(data)
+var colorPalette = ["#ccc","#fff","#000","#B33","#f31","#fc3","#fd7"]
+var colorPaletteFont = ["#222","#111","#000","#333","#555","#fcc","#fdc"]
+Distance2=(a,b,c)=>Math.hypot(a,b,c);
+stringToInt=c=>(parseInt(c, 16) << 8) / 16;
+formatColor=c=>255-c
+var tempArr = []
+var alphaArr=[]
+for (i = 0, n = data.length; i < n; i += 4) {
+    let targetRed = (data[i])
+    let targetGreen = (data[i+1])
+    let targetBlue = (data[i+2])
+    let alpha =data[i+3]
+    
+    let minDist=99999
+    let index=0
+    for(var j=0;j<colorPalette.length;j++){
+        let selectColor = colorPalette[j]
+        let red = stringToInt(selectColor[1])
+        let green = stringToInt(selectColor[2])
+        let blue = stringToInt(selectColor[3])
+        
+        let dist = Distance2(targetRed-red,targetGreen-green,targetBlue-blue)
+        
+        if(minDist>dist)minDist=dist,index=j;
+    }
+    tempArr.push(index)
+    alphaArr.push(alpha)
+}
+//console.log(tempArr)
+
+//context1.stroke()
+
+ctx = c.getContext("2d",{
+    alpha: false,
+    desynchronized: true
+});
+
+let scaleSize = 8
+ctx.imageSmoothingEnabled = false;
+w=c.width = (canvasWidth|0)
+h=c.height = (canvasHeight|0)
+c.height = (canvasHeight|0)*scaleSize
+c.width = (canvasWidth|0)*scaleSize
+ctx.scale(scaleSize,scaleSize)
+ctx.fillStyle="#fff"
+ctx.fillRect(0,0,w,h)
+rect1=(ctx,x,y,w,h,c="red",r=5)=>{
+    ctx.save()
+    ctx.fillStyle=c
+    ctx.beginPath()
+    ctx.miterLimit=30
+    ctx.lineWidth=2
+    ctx.lineJoin = "miter";
+    ctx.moveTo(x, y)
+    ctx.lineTo(x+w, y)
+    ctx.arcTo(x+w+r, y, x+w+r, y+r, r)
+    ctx.lineTo(x+w+r,y+h+r)
+    ctx.arcTo(x+w+r,y+h+r+r,x+w,y+h+r+r,r)
+    ctx.lineTo(x,y+h+r+r)
+    ctx.arcTo(x-r,y+h+r+r,x-r,y+h+r,r)
+    ctx.lineTo(x-r,y+r)
+    ctx.arcTo(x-r,y,x,y,r)
+    ctx.fill()
+    // for(var i=0;i<(x+w)/5+(y+r+h)/5;i++){
+
+    // }
+    ctx.restore()
+}
+w1=w
+w2=0
+h1=h
+h2=0
+
+let as = []
+for (let ii=x=y=0; ii < tempArr.length;ii++) {
+    ctx.fillStyle = colorPalette[tempArr[ii]]
+    ctx.strokeStyle = colorPalette[tempArr[ii]]
+    ctx.globalAlpha= (alphaArr[ii]/255)|0
+    if(x>=w2&&y<h1&&y>=h2){
+        //ctx.strokeRect(x,y,1,1)
+        if(tempArr[ii]==2){
+            ctx.globalAlpha= 1
+        }
+        rect1(ctx,x,y,.1,.1,colorPalette[tempArr[ii]],6)
+        as.push(ctx.getImageData(x,y,1,1))
+    }
+    if(x<w){ 
+        x+=1
+    }
+    if(x>=w1){
+        x=0
+        y+=1
+        ii+=w-w1
+    }
+    
+}
+console.log(as)
+ctx.fillStyle="#aa1"
+ctx.globalAlpha=1
+//ctx.fillRect(0,0,w,h)
+// c = document.getElementById("myCanvas");
+// ctx = c.getContext("2d");
+// c.width=500
+// c.height=500
+
+//ctx.drawImage(fogCanvas,0,0,w,h)
+//ctx.fillText("A",30,110)
+</script>
+</body>
+</html>

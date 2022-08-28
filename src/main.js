@@ -31,7 +31,6 @@ Update=_=>{
 }
 MainLoop=_=>{
     UI()
-    rect(20,30,50,50)
     
     requestAnimationFrame(MainLoop)
 }

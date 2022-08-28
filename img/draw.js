@@ -9,7 +9,18 @@ GetContext=a=>a.getContext('2d',{
 
 const canvas = GetCanvas('a')
 const ctx = GetContext(canvas)
-
+let sa = 0
+Frame=a=>{
+ ctx.clearRect(0,0,500,500)
+ //console.log(a)
+ sa+=a
+ ctx.globalAlpha  = sa 
+ ctx.fillStyle="#0fa"
+ ctx.fillRect(0,0,500,500)
+}
+Tutorial=_=>{
+    ctx.setLineDash([8])
+}
 //Sence Frame
 PauseGame=_=>{
     
