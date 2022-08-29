@@ -306,6 +306,53 @@ ctx.globalAlpha=1
 
 //ctx.drawImage(fogCanvas,0,0,w,h)
 //ctx.fillText("A",30,110)
+
+/*BAR TO >>> */
+let bar1 = {
+	x:20,
+    y:20,
+    h:50,
+    life:100,
+    ml:100
+}
+let bar2 = {
+	x:60,
+    y:20,
+    h:50,
+    life:100,
+    ml:100
+}
+bar=(x,y,h,live,ml)=>{
+	let cy = h/ml*live
+	let ty=y
+    rect1(ctx,x,y+=(h-cy),5,cy,"#ccc",5,1)
+    rect1(ctx,x,ty,5,h,"#000")
+ 	for(var i=0;i<=live;i+=20){
+    	rect1(ctx,x,ty+(h-h/ml*i),8,1,"#aa1",1,1)
+    }
+    ctx.font="20px Impact"
+    ctx.fillText("❤️",x-10,ty+h+10*2)
+}
+let GameObject=[bar1,bar2]
+update=ms=>{
+	GameObject.forEach(e=>{
+        e.life+=1
+        bar(e.x,e.y,e.h,e.life,e.ml)
+        e.life=e.life>=e.ml?0:e.life
+    })
+}
+let lastUpdate = performance.now();
+MainLoop=_=>{
+	ctx.clearRect(0,0,200,200)
+	const now = performance.now();
+    const deltaMs = now - lastUpdate;
+    const delta = deltaMs / 1000;
+    lastUpdate = now;
+    update(deltaMs)
+	requestAnimationFrame(MainLoop)
+}
+
+//MainLoop()
 </script>
 </body>
 </html>
