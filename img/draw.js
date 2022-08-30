@@ -40,8 +40,13 @@ PageIn=vec=>{
 PageOut=vec=>{
 
 }
-Blink=_=>{
-    
+Blink=ms=>{
+    ctx.save()
+    ctx.fillStyle="#000"
+    var frequency = 200;
+    ctx.globalAlpha=1
+    ctx.fillRect(0,0,1024,768)
+    ctx.restore()
 }
 // UI
 UI=_=>{
