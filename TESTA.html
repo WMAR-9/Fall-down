@@ -174,20 +174,65 @@ for (let i = 0; i < 32; i++) {
         ctx.restore()
 
 */
+let colorAlpha={
+    z:1
+}
+// linear 
+function bounce(timeFraction) {
+    for (let a = 0, b = 1; 1; a += b, b /= 2) {
+        if (timeFraction >= (7 - 4 * a) / 11) {
+          return -Math.pow((11 - 6 * a - 11 * timeFraction) / 4, 2) + Math.pow(b, 2)
+        }
+    }
+}
 blink=ms=>{
     var w=h=1024
-    var radialGradient = ctx.createRadialGradient(0,0, 40, w, h, 300);
-    radialGradient.addColorStop(.3, '#1ff0');
-    radialGradient.addColorStop(.7, '#fff0');
-    radialGradient.addColorStop(.8, '#fff');
-    radialGradient.addColorStop(1, '#111');
-    ctx.fillStyle = radialGradient;
+    // var radialGradient = ctx.createRadialGradient(0,0, 40, w, h, 300);
+    // radialGradient.addColorStop(.3, '#1ff0');
+    // radialGradient.addColorStop(.7, '#fff0');
+    // radialGradient.addColorStop(.8, '#fff');
+    // radialGradient.addColorStop(1, '#111');
+    // ctx.fillStyle = radialGradient;
+    ctx.fillStyle="#000"
+    colorAlpha.z+= bounce(ms)
+    colorAlpha.z = Math.min(colorAlpha.z,1)
+    ctx.globalAlpha = colorAlpha.z
+    ctx.fillRect(0, 0, w, h);
+    if(colorAlpha.z>=1)colorAlpha.z=0
+}
+
+fadeOut=ms=>{
+    var w=h=1024
+    ctx.fillStyle="#000"
+    let x = colorAlpha.z
+    //colorAlpha.z = -Math.pow((2 - 1 * x - 1 * ms), 2) + Math.pow(2, 2)
+    colorAlpha.z -=bounce(ms)
+    colorAlpha.z = Math.max(colorAlpha.z,0)
+    ctx.globalAlpha = colorAlpha.z
+    if(colorAlpha.z<=0)colorAlpha.z=1
     ctx.fillRect(0, 0, w, h);
 }
+let sacel ={
+    z:1
+}
+// bounce : easeout
+scaleOut=ms=>{
+    var w=h=1024
+    ctx.fillStyle="#000"
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle="#fff"
+    ctx.font = sacel.z+"px Impact"
+    sacel.z+=ms*10
+    ctx.fillRect(w/2,382,sacel,z)
+}
 GameObject = []
+let maa = 0 
 update=ms=>{
     drawCloud(100,135);
-    blink()
+    //fadeOut(ms)
+    blink(ms)
+   // scaleOut(ms)
+    maa+=ms
 	GameObject.forEach(e=>{
         let pr = e.z/5
         // e.x += (e.x-centerX)*(e.wh/e.z)
@@ -229,7 +274,7 @@ MainLoop=_=>{
     // }
     
     ctx.restore()
-    update(deltaMs)
+    update(delta)
 	requestAnimationFrame(MainLoop)
 }
 
