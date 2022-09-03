@@ -137,7 +137,6 @@ const drawCloud = (x, y,wx,wy) => {
     ctx.fill()
 }
 
-
 for (let i = 0; i < 32; i++) {
     GameObject.push({
         x:32*i,
@@ -148,6 +147,7 @@ for (let i = 0; i < 32; i++) {
 }
 // math z-index
 /*
+
     e.x += (centerX-e.x)/e.z
     e.y -= (centerY-0)/e.z
     e.z -= ms * duration
@@ -156,6 +156,7 @@ for (let i = 0; i < 32; i++) {
     |lighter >>>>>>> dark    |
      ------------------------
     globalAlpha = 1 - (e.wh/e.z)
+
 */
 /*Draw background map >>
         
@@ -277,7 +278,20 @@ MainLoop=_=>{
     update(delta)
 	requestAnimationFrame(MainLoop)
 }
-
+RandChance=(l,n)=>{
+    let CollectionAppearPos = [...Array(l).keys()]
+    for(var io=0;io<n;io++){
+        CollectionAppearPos.splice(RandInt(CollectionAppearPos.length),1)
+    }
+    return CollectionAppearPos
+}
+// good = (speed-safeSpeed*itemSpeed) + (50/level)
+// RandChance()
+// chance
+// bad = (th*size)/maxSpeed + (2*level)   //th 為行數  50 // 30 (最大值 50)
+// RandChance(th,bad)
+// 
+console.log(RandChance(10,5))
 MainLoop()
 </script>
 
