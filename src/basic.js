@@ -13,7 +13,7 @@ IntToString=a=>a.toString()
 Pad=a=>a.padStart(4,"0");
 
 // UI frame size
-let innerWidth,canvasWidth,canvasHeight;
+let innerWidth,canvasWidth,canvasHeight,rect;
 
 
 // inputs controls
@@ -30,7 +30,15 @@ onblur=onfocus=e=>key1=InitailLoopDict(key1,e.type=="blur"?0:1)
 
 onmousedown=e=>{
     // let as = e.button==0?e.type=="mouseup"?"b":"a":"c"
-    if(!e.button)e.pageX>innerWidth/2?key.s=1:key.a=1
+    if(!e.button){
+        e.pageX>innerWidth/2?key.s=1:key.a=1
+        let x= e.clientX - rect.left
+        let y = e.clientY - rect.top
+        console.log(x,y)
+        key1.m=!key1.m
+        key1.r=!key1.r
+        key1.p=!key1.p
+    }
     console.log("onmousedown and up",key)
 }
 onmouseup=e=>!e.button?key=InitailLoopDict(key,0):0;
@@ -73,6 +81,7 @@ const resize = () => {
     canvasHeight=canvas.height = size * unit + size*4;
     ctx.imageSmoothingEnabled = false;
     innerWidth=iw
+    rect = canvas.getBoundingClientRect();
     console.log(innerWidth,canvas.height)
 };
 onresize=e=>resize()

@@ -137,6 +137,11 @@ button=(x,y,frame,alpha)=>{
     ctx.fillText(frame,x,y)
     ctx.restore()
 }
+TextField=(str,x,y,size,color="#fff")=>{
+    ctx.fillStyle=color
+    ctx.font=size+"px Impact"
+    ctx.fillText(str,x,y)
+}
 ScaleLine=(x,y,gh,h=200)=>{
     ctx.save()
     ctx.beginPath()
@@ -146,29 +151,21 @@ ScaleLine=(x,y,gh,h=200)=>{
     ctx.lineTo(x,y+h)
     ctx.stroke()
     ctx.restore()
+    ctx.save()
     ctx.beginPath()
     ctx.lineWidth = 3
     ctx.lineCap = 'round';
-    let pxy=[]
     for(var i=0,c=0;i<=h;i+=gh*2,c++){
         ctx.strokeStyle="#fff"
-        if(!c||c==h/gh){
-            pxy.push({x,y:y+i})
-        }
-        ctx.moveTo(x-gh/2,y+i)
-        ctx.lineTo(x+gh/2,y+i)
+        if(c==5)rect1(ctx,x-gh/2,y+i,gh,gh,"#bb8",5,1)
+        else rect1(ctx,x+gh/2,y+i,-gh,gh)
         ctx.stroke()
     }
     ctx.closePath()
-    pxy.forEach(e=>{
-        ctx.strokeStyle="#b88"
-        ctx.moveTo(e.x-gh/2,e.y)
-        ctx.lineTo(e.x+gh/2,e.y)
-        ctx.stroke()
-    })
     ctx.restore()
 }
 // UI
+let adf= 0
 UI=ms=>{
     // canvas.width = canvas.height = size * unit;
     //Tutorial(ms)
@@ -188,6 +185,7 @@ UI=ms=>{
     for(var k in keyStopRestartMute){
         ctx.globalCompositeOperation = "lighten"
         ctx.globalAlpha = Max(key1[keyStopRestartMute[k]],.5)
+        
         ctx.fillText(ci-1?ci-2?"⏯️":"🎧":"🏠",tw-22*ci-5,firstLineY)
         ci++
     }
@@ -198,11 +196,19 @@ UI=ms=>{
     let score = Pad(IntToString(Min(25,9999)))
     ctx.fillText(score,tw-firstLineY*3.5,secondLineY-firstLineY)
     //ctx.strokeRect(tw-firstLineY*3.1,secondLineY-40,50,25)
+    TextField("Meter",10,firstLineY+5,15)
+    TextField(adf*10*ms+"  /m",15,firstLineY*2,10)
+    TextField("G-Speed",10,firstLineY*3,15)
+    TextField(adf*10*ms+"  /g",15,firstLineY*4,10)
     ctx.restore()
     bar(tw-firstLineY*2.5,secondLineY,40,sizeW,sizeW,"🧡")
     bar(tw-firstLineY,secondLineY,40,sizeW,sizeW,"🥶")
-
-    ScaleLine(20,th/2,10,sizeW*1)
+    
+    ScaleLine(20,th/2,10,sizeW)
+    ctx.globalCompositeOperation="exclusion"
+    rect1(ctx,25,th/2+adf,2,2,"#b88",2,1)
+    adf += 1
+    adf = Min(sizeW,adf)
 }
 SlopeY=(a,b,k=-20)=>a*k+b
 //rect
