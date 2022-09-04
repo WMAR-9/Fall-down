@@ -1,17 +1,5 @@
-// utils function
-// basic same variable
-const windows = window
-const documents = document
-const math=Math
-const PI = math.PI
-let innerWidth;
-Rand=a=>math.random()*a
-RandInt=a=>Rand(a)|0;
-RandIntBetween=(a,b)=>a+RandInt(b-a+1);
-Distance=(a,b)=>math.hypot(a,b);
-Max=(a,b)=>a>b?a:b;
-Min =(a,b)=>(a<b)?a:b;
 
+// basic same variable
 localSet=(e,a)=>l.setItem(e,a)
 localGet=e=>l.getItem(e)
 
@@ -32,15 +20,21 @@ Update=_=>{
     const deltaMs = now - lastUpdate;
     const delta = deltaMs / 1000;
     lastUpdate = now;
+    UI(delta)
 }
+
 MainLoop=_=>{
-    UI()
-    
+    ctx.clearRect(0,0,canvasWidth,canvasHeight)
+    ctx.save()
+    ctx.scale(2,2)
+    Update()
+    ctx.restore()
     requestAnimationFrame(MainLoop)
 }
 
-// inputs 
 
+
+// inputs controls
 let key= {},key1={}
 let keyStopRestartMute=['r','m','p']
 keyStopRestartMute.forEach(e=>key1[e]=0)
@@ -87,18 +81,20 @@ onkeyup=e=>{
         console.log("STOP")
     }
     console.log("key up",key)
+    bar2.life+=5
 }
+
 // Canvas resizing
 const resize = () => {
     const unit = 32,iw=windows.innerWidth,ih=windows.innerHeight;
     const size = Min((Min(iw, ih) / unit)|0, 24);
-    canvas.width = size * unit;
-    canvas.height = size * unit + 50;
+    canvasWidth=canvas.width = size * unit;
+    canvasHeight=canvas.height = size * unit + size*4;
     ctx.imageSmoothingEnabled = false;
     innerWidth=iw
     console.log(innerWidth,canvas.height)
 };
 onresize=e=>resize()
-//window.addEventListener("resize", resize);
+
 resize()
 MainLoop()
