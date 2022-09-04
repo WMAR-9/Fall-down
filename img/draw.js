@@ -22,20 +22,17 @@ Tutorial=ms=>{
     // game frame
     ctx.fillStyle="#A0A"
     ctx.fillRect(0,0,w,h)
-
     // give an shadow frame
     ctx.globalAlpha=0.5
     ctx.fillStyle='#333'
     ctx.fillRect(0,0,w,h)
     ctx.beginPath();
-
     ctx.strokeStyle="#fff"
     ctx.setLineDash([9]);
     ctx.lineWidth=5
     ctx.strokeRect(w/2+w/4,5,75,25)
     ctx.moveTo(w/2,0)
     ctx.lineTo(w/2,h*ms*GoAlpha)
-
     GoAlpha+=2
     GoAlpha= math.min(h,GoAlpha)
     ctx.globalAlpha=GoAlpha/h
@@ -133,21 +130,43 @@ bar=(x,y,h,live,ml,str)=>{
     ctx.fillText(str,x-11,ty+h+10*2)
     ctx.restore()
 }
-let bar1 = {
-	x:50,
-    y:20,
-    h:30,
-    life:100,
-    ml:100,
-    emoji:"🧡"
+button=(x,y,frame,alpha)=>{
+    ctx.save()
+    ctx.font="18px Impact"
+    ctx.globalAlpha=alpha
+    ctx.fillText(frame,x,y)
+    ctx.restore()
 }
-let bar2 = {
-	x:60,
-    y:20,
-    h:30,
-    life:100,
-    ml:100,
-    emoji:"🥶"
+ScaleLine=(x,y,gh,h=200)=>{
+    ctx.save()
+    ctx.beginPath()
+    ctx.setLineDash([2]);
+    ctx.strokeStyle="#fff"
+    ctx.moveTo(x,y)
+    ctx.lineTo(x,y+h)
+    ctx.stroke()
+    ctx.restore()
+    ctx.beginPath()
+    ctx.lineWidth = 3
+    ctx.lineCap = 'round';
+    let pxy=[]
+    for(var i=0,c=0;i<=h;i+=gh*2,c++){
+        ctx.strokeStyle="#fff"
+        if(!c||c==h/gh){
+            pxy.push({x,y:y+i})
+        }
+        ctx.moveTo(x-gh/2,y+i)
+        ctx.lineTo(x+gh/2,y+i)
+        ctx.stroke()
+    }
+    ctx.closePath()
+    pxy.forEach(e=>{
+        ctx.strokeStyle="#b88"
+        ctx.moveTo(e.x-gh/2,e.y)
+        ctx.lineTo(e.x+gh/2,e.y)
+        ctx.stroke()
+    })
+    ctx.restore()
 }
 // UI
 UI=ms=>{
@@ -156,25 +175,35 @@ UI=ms=>{
     //FadeOut(ms)
     //FadeIn(ms)
     //Blink(ms)
-    //FadeIn(ms)
     ctx.fillStyle="#888"
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    rect(20,20,10,10,"#030")
-    ctx.font="20px Impact"
-    ctx.fillStyle="#fff"
+    FadeIn(ms)
+    ctx.save()
     
-    ctx.fillText("🎧",20,15)
-    ctx.fillText("⏸",20,15)
-    ctx.fillText("⌂",20,15)
-    //🚫▶⌂
-    rect(50,20,10,10,"#030")
-    rect(80,20,10,10,"#030")
-    //bar(bar1.x,bar1.y,bar1.h,bar1.life,bar1.ml,bar1.emoji)
-    //bar(bar2.x,bar2.y,bar2.h,bar2.life,bar2.ml,bar2.emoji)
+    // **************************************************
+    ctx.font="15px Impact"
+    ctx.fillStyle="#fff"
+    let tw=canvasWidth/2,th=canvasHeight/2,ci=1
+    let firstLineY=20,secondLineY=80,sizeW=100
+    for(var k in keyStopRestartMute){
+        ctx.globalCompositeOperation = "lighten"
+        ctx.globalAlpha = Max(key1[keyStopRestartMute[k]],.5)
+        ctx.fillText(ci-1?ci-2?"⏯️":"🎧":"🏠",tw-22*ci-5,firstLineY)
+        ci++
+    }
+    ctx.restore()
+    ctx.save()
+    ctx.fillStyle="#fff"
+    ctx.font="30px Impact"
+    let score = Pad(IntToString(Min(25,9999)))
+    ctx.fillText(score,tw-firstLineY*3.5,secondLineY-firstLineY)
+    //ctx.strokeRect(tw-firstLineY*3.1,secondLineY-40,50,25)
+    ctx.restore()
+    bar(tw-firstLineY*2.5,secondLineY,40,sizeW,sizeW,"🧡")
+    bar(tw-firstLineY,secondLineY,40,sizeW,sizeW,"🥶")
+
+    ScaleLine(20,th/2,10,sizeW*1)
 }
-Rand=a=>Math.random()*a
-RandInt=a=>Rand(a)|0;
-RandIntBetween=(a,b)=>a+RandInt(b-a+1);
 SlopeY=(a,b,k=-20)=>a*k+b
 //rect
 rect=(x,y,w,h,c="red",r=5)=>{
@@ -193,11 +222,7 @@ rect=(x,y,w,h,c="red",r=5)=>{
     ctx.arcTo(x-r,y+h+r+r,x-r,y+h+r,r)
     ctx.lineTo(x-r,y+r)
     ctx.arcTo(x-r,y,x,y,r)
-    //ctx.stroke()
     ctx.fill()
-    // for(var i=0;i<(x+w)/5+(y+r+h)/5;i++){
-
-    // }
     ctx.restore()
 }
 
