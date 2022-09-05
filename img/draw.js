@@ -83,12 +83,14 @@ FadeOut=ms=>{
     ctx.fillRect(0, 0, canvasWidth,canvasHeight);
 }
 FadeIn=ms=>{
+    ctx.save()
     GoAlpha+=ms
-    GoAlpha=Min(GoAlpha,1)
+    GoAlpha=Min(GoAlpha,2)
     ctx.globalAlpha  = GoAlpha 
     ctx.fillStyle="#333"
     ctx.fillRect(0,0,canvasWidth,canvasHeight)
-}
+    ctx.restore()
+}   
 //============================================
 //          Object
 //============================================
@@ -164,6 +166,88 @@ ScaleLine=(x,y,gh,h=200)=>{
     ctx.closePath()
     ctx.restore()
 }
+Add=()=>{
+    let tw = canvasWidth/2,th=canvasHeight/2
+    //tw/32
+    for(let j =0;j<th/32;j++){
+        for (let i = 0; i < tw/32; i++) {
+            // 
+            GameObject.push({
+                x:32*i,
+                y:32*j,
+                z:256,
+                wh:32*j
+                })
+        }
+    }
+}
+Add()
+// main map
+/*
+        let pr = e.z/5
+        e.x += (e.x-centerX)*(e.wh/e.z)
+        e.x += (centerX-e.x)/e.z
+        e.y -= (centerY-0)/e.z
+        e.z-=.5
+        e.z=Math.max(e.z,0)
+        rect1(ctx,e.x,e.y,pr,pr,"#0a0",1,1)
+        ctx.save()
+        ctx.fillStyle="#888"
+        ctx.globalAlpha=1-(e.z/e.wh)
+*/
+MainGame=ms=>{
+    ctx.save()
+    let targetX=tw=canvasWidth/2,th=canvasHeight/2,size=128
+    // let targetY=-50
+    // let pr = size/5
+    // for (let i = 0; i < tw/32; i++) {
+    //     for (let j = 0; j < th/32; j++) {
+
+    //         rect1(ctx,i*32,j*32,pr,pr,"#ba1",1,1)
+    //     }
+    // }
+    // ctx.restore()
+    /**
+     *  //Pos X
+     *  W / 2 - ((side / 2) + ((j-i/2) * side)),
+        //Pos Y
+        side * (i + 1)
+     * 
+     * 
+     */
+    ctx.strokeStyle="#FF1"
+    ctx.moveTo(tw/2,0)
+    ctx.lineTo(tw/2,th)
+    let tempSize = 32
+    ctx.strokeRect(tw/2-tempSize/2,th/4,tempSize,tempSize)
+    ctx.stroke()
+    GameObject.forEach(e=>{
+        
+        // formula
+        // e.x += (e.x-centerX)*(e.wh/e.z)
+        e.wh -=ms*50
+        e.x += (tw/2-e.x)/e.z
+        e.y -= (th+80)/e.z
+        let pr = e.wh/16
+        e.z-=ms*25
+        e.z=Math.max(e.z,0)
+        //rect1(ctx,e.x,e.y,pr,pr,"#0a0",1,1)
+        ctx.save()
+        ctx.fillStyle="#333"
+        ctx.strokeStyle="#FFF"
+        //ctx.globalAlpha=(e.z/e.wh)
+        ctx.fillRect(e.x,e.y,pr,pr)
+        ctx.strokeRect(e.x,e.y,pr,pr)
+        //ctx.fillRect(100,e.y,pr,pr)
+        ctx.restore()
+        if(e.y<-pr*1.5){
+            GameObject.splice(GameObject.indexOf(e),1)
+        }
+        //console.log("here")
+    })
+    if(!GameObject.length)Add()
+    ctx.restore()
+}
 // UI
 let adf= 0
 UI=ms=>{
@@ -172,11 +256,12 @@ UI=ms=>{
     //FadeOut(ms)
     //FadeIn(ms)
     //Blink(ms)
-    ctx.fillStyle="#888"
+    ctx.fillStyle="#0077B6"
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    FadeIn(ms)
-    ctx.save()
     
+    GoAlpha>=2?0:FadeIn(ms)
+    ctx.save()
+    MainGame(ms)
     // **************************************************
     ctx.font="15px Impact"
     ctx.fillStyle="#fff"
@@ -185,10 +270,12 @@ UI=ms=>{
     for(var k in keyStopRestartMute){
         ctx.globalCompositeOperation = "lighten"
         ctx.globalAlpha = Max(key1[keyStopRestartMute[k]],.5)
-        
-        ctx.fillText(ci-1?ci-2?"⏯️":"🎧":"🏠",tw-22*ci-5,firstLineY)
+        let x = tw-22*ci-5,y=firstLineY,h=12,w=18
+        resizeWindow?0:checkButton.push({x,y:y-10,w,h})
+        ctx.fillText(ci-1?ci-2?"⏯️":"🎧":"🏠",x,y)
         ci++
     }
+    resizeWindow=1
     ctx.restore()
     ctx.save()
     ctx.fillStyle="#fff"
@@ -197,20 +284,19 @@ UI=ms=>{
     ctx.fillText(score,tw-firstLineY*3.5,secondLineY-firstLineY)
     //ctx.strokeRect(tw-firstLineY*3.1,secondLineY-40,50,25)
     TextField("Meter",10,firstLineY+5,15)
-    TextField(adf*10*ms+"  /m",15,firstLineY*2,10)
+    TextField(((adf*10*ms)|0)+"  /m",15,firstLineY*2,10)
     TextField("G-Speed",10,firstLineY*3,15)
-    TextField(adf*10*ms+"  /g",15,firstLineY*4,10)
-    ctx.restore()
+    TextField(((adf*10*ms)|0)+"  /g",15,firstLineY*4,10)
+    ScaleLine(20,th/2,10,sizeW)
     bar(tw-firstLineY*2.5,secondLineY,40,sizeW,sizeW,"🧡")
     bar(tw-firstLineY,secondLineY,40,sizeW,sizeW,"🥶")
-    
-    ScaleLine(20,th/2,10,sizeW)
     ctx.globalCompositeOperation="exclusion"
     rect1(ctx,25,th/2+adf,2,2,"#b88",2,1)
     adf += 1
     adf = Min(sizeW,adf)
+    ctx.restore()
 }
-SlopeY=(a,b,k=-20)=>a*k+b
+
 //rect
 rect=(x,y,w,h,c="red",r=5)=>{
     ctx.save()

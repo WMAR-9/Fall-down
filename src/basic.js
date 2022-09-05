@@ -2,22 +2,33 @@ const windows = window
 const documents = document
 const math=Math
 const PI = math.PI
-
+//       var minX1 = this.x,
+//         maxX1 = this.x+this.w,
+//         minX2 = a.x,
+//         maxX2 = a.x+a.w;
+//       var minY1 = this.y,
+//         maxY1 = this.y+this.h,
+//         minY2 = a.y,
+//         maxY2 = a.y+a.h;
+//       if (maxX1 > minX2 && maxX2 > minX1 &&
+//         maxY1 > minY2 && maxY2 > minY1)
 Rand=a=>math.random()*a
 RandInt=a=>Rand(a)|0;
 RandIntBetween=(a,b)=>a+RandInt(b-a+1);
 Distance=(a,b)=>math.hypot(a,b);
+CollisionRect=(a,b)=>(a.x+a.w>b.x&&b.x+b.w>a.x&&a.y+a.h>b.y&&b.y+b.h>a.y)?1:0
 Max=(a,b)=>a>b?a:b;
 Min =(a,b)=>(a<b)?a:b;
 IntToString=a=>a.toString()
 Pad=a=>a.padStart(4,"0");
-
+SlopeY=(a,b,k=-20)=>a*k+b
 // UI frame size
-let innerWidth,canvasWidth,canvasHeight,rect;
+let innerWidth,canvasWidth,canvasHeight,rect,resizeWindow;
+let GameObject=[]
 
 
 // inputs controls
-let key= {},key1={}
+let key= {},key1={},checkButton=[]
 let keyStopRestartMute=['r','m','p']
 keyStopRestartMute.forEach(e=>key1[e]=0)
 console.log(key1)
@@ -34,12 +45,18 @@ onmousedown=e=>{
         e.pageX>innerWidth/2?key.s=1:key.a=1
         let x= e.clientX - rect.left
         let y = e.clientY - rect.top
-        console.log(x,y)
-        key1.m=!key1.m
-        key1.r=!key1.r
-        key1.p=!key1.p
+        let h=w=1
+        console.log(x/2,y/2)
+        checkButton.forEach((e,i)=>{
+            if(CollisionRect(e,{x:x/2,y:y/2,w,h})){
+                key1[keyStopRestartMute[i]]=!key1[keyStopRestartMute[i]]
+                console.log("onmousedown and up",key1)
+            }
+            console.log("onmousedown",CollisionRect(e,{x:x/2,y:y/2,w,h}))
+        })
     }
-    console.log("onmousedown and up",key)
+    console.log("onmousedown and up",checkButton[0])
+    console.log("onmousedown and up",key1)
 }
 onmouseup=e=>!e.button?key=InitailLoopDict(key,0):0;
 ontouchstart=e=>{
@@ -82,7 +99,8 @@ const resize = () => {
     ctx.imageSmoothingEnabled = false;
     innerWidth=iw
     rect = canvas.getBoundingClientRect();
-    console.log(innerWidth,canvas.height)
+    checkButton=[]
+    resizeWindow=0
 };
 onresize=e=>resize()
 
