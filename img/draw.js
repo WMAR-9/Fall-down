@@ -37,15 +37,15 @@ CreateFont=(limitLine,color,type=1)=>{
         //     fontCtx.moveTo(tx,ty)
         //     fontCtx.lineTo(tw,th)
         // }
-        // ty=0
-        // tw=w
-        // for(i=0;i<limitLine;i++){
-        //     fontCtx.moveTo(tx,ty)
-        //     fontCtx.lineTo(tw,th)
-        //     th-=h/limitLine
-        //     tx+=w/limitLine
+        ty=0
+        tw=w
+        for(i=0;i<limitLine;i++){
+            fontCtx.moveTo(tx,ty)
+            fontCtx.lineTo(tw,th)
+            th-=h/limitLine
+            tx+=w/limitLine
             
-        // }
+        }
         tx=0
         ty=h
         th=0
@@ -66,9 +66,7 @@ CreateFont=(limitLine,color,type=1)=>{
             ty-=h/limitLine
             tw-=w/limitLine
         }
-        
         fontCtx.stroke()
-
         var imagea = new Image();
         imagea.src = fontCanvas.toDataURL();
         fontTotal[allString[j]]=imagea
@@ -440,5 +438,6 @@ FontCreate=(char,color,type="#")=>{
         }
     }
 }
-background1=(x,y,x1,y2,)=>{
+background1=(x,y,x1,y2)=>{
+
 }

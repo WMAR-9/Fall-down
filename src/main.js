@@ -34,4 +34,3 @@ MainLoop=_=>{
 
 resize()
 MainLoop()
-
