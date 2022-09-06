@@ -1,15 +1,83 @@
 // draw each frame i need
 // set canvas and ctx  
-// use b canvas to create game object
-GetCanvas=a=>document.getElementById(a)
-GetContext=a=>a.getContext('2d',{
-    alpha: false,
-    desynchronized: true
-})
 
-const canvas = GetCanvas('a')
-const ctx = GetContext(canvas)
 let DownAlpha = 1,GoAlpha=0
+
+/**
+ * Font Frame
+ * output >> {A:Image,B:Image}
+ * 
+ */
+line=(ctx,x,y)=>{
+	ctx.lineTo(x,y);
+}
+CreateFont=(limitLine,color,type=1)=>{
+    //let allString = "ABCDEFGHIJKLMNOPQRSTUVXYWZ!@#$%~^&=123456790"
+    let allString = "ABCDE"
+    let fontTotal ={}
+    
+    for(var j=0;j<allString.length;j++){
+        var i;
+        var fontCanvas = document.createElement('canvas')
+        var fontCtx = fontCanvas.getContext('2d')
+        fontCtx.font = "bold 100px Impact";
+        var tx=ty=0
+        var th=h=fontCtx.height=82,tw=w=fontCtx.width=fontCtx.measureText(allString[j]).width
+        //fontCtx.fillStyle='rgba(255,255,255,0)'
+        const fixHeight = 82
+        fontCtx.scale(2,2)
+        //fontCtx.fillRect(0,0,fixHeight,fixHeight)
+        fontCtx.fillStyle=color
+        fontCtx.strokeStyle="#800"
+        fontCtx.fillText(allString[j],0,fixHeight)
+        fontCtx.globalCompositeOperation="destination-in"
+        // for(i=0;i<limitLine;i++){
+        //     tw-=w/limitLine
+        //     ty+=h/limitLine
+        //     fontCtx.moveTo(tx,ty)
+        //     fontCtx.lineTo(tw,th)
+        // }
+        // ty=0
+        // tw=w
+        // for(i=0;i<limitLine;i++){
+        //     fontCtx.moveTo(tx,ty)
+        //     fontCtx.lineTo(tw,th)
+        //     th-=h/limitLine
+        //     tx+=w/limitLine
+            
+        // }
+        tx=0
+        ty=h
+        th=0
+        tw=w
+        for(i=0;i<limitLine;i++){
+            th+=h/limitLine
+            tx+=w/limitLine
+            fontCtx.moveTo(tx,ty)
+            fontCtx.lineTo(tw,th)
+        }
+        tx=0
+        ty=h
+        th=0
+        tw=w
+        for(i=0;i<limitLine;i++){
+            fontCtx.moveTo(tx,ty)
+            fontCtx.lineTo(tw,th)
+            ty-=h/limitLine
+            tw-=w/limitLine
+        }
+        
+        fontCtx.stroke()
+
+        var imagea = new Image();
+        imagea.src = fontCanvas.toDataURL();
+        fontTotal[allString[j]]=imagea
+    }
+    return fontTotal
+}
+
+let sdfsdf = CreateFont(10,"#0f1",1) 
+console.log(sdfsdf.A)
 /*
     ===============================
     Transform
@@ -166,18 +234,57 @@ ScaleLine=(x,y,gh,h=200)=>{
     ctx.closePath()
     ctx.restore()
 }
-Add=()=>{
-    let tw = canvasWidth/2,th=canvasHeight/2
+EmojiToImage=(str)=>{
+    
+}
+CreateObject=_=>{
+    var fontCanvas = document.createElement('canvas')
+    var fontCtx = GetContext(fontCanvas),ww,hh
+    ww=hh=fontCanvas.width=fontCanvas.height=32
+    fontCtx.scale(2,2)
+    fontCtx.fillStyle="#111"
+    fontCtx.fillRect(0,0,ww,hh)
+    ww = ww/6,hh=hh/6
+    let x=y=c=0,oldWidth=0
+    for(var i=0;i<9;i++){
+        fontCtx.fillStyle="#a88"
+        let tt= RandInt(ww/2)
+        fontCtx.fillRect(x+oldWidth,y,ww+tt,hh)
+        //fontCtx.strokeRect(x+oldWidth,y,ww+tt,hh)
+        oldWidth=tt
+        if(c==2){
+            y+=hh
+            x=0
+            c=0
+        }else{
+            x+=ww
+            c++
+        }
+    }
+    var imagea = new Image();
+    imagea.src = fontCanvas.toDataURL();
+    return imagea;
+}
+let wallImage= CreateObject()
+console.log(wallImage)
+GameObject=[]
+AddOneLine=()=>{
+    //let tw = canvasWidth/2,th=canvasHeight/2
     //tw/32
+    GameObject.push()
+}
+Add=()=>{
+    //let tw = canvasWidth/2,th=canvasHeight/2
+    //tw/32
+    let tw = 250,th=250
     for(let j =0;j<th/32;j++){
         for (let i = 0; i < tw/32; i++) {
             // 
             GameObject.push({
-                x:32*i,
-                y:32*j,
-                z:256,
-                wh:32*j
-                })
+                x:64*i,
+                y:64*j,
+                img:CreateObject()
+            })
         }
     }
 }
@@ -198,56 +305,53 @@ Add()
 MainGame=ms=>{
     ctx.save()
     let targetX=tw=canvasWidth/2,th=canvasHeight/2,size=128
-    // let targetY=-50
-    // let pr = size/5
-    // for (let i = 0; i < tw/32; i++) {
-    //     for (let j = 0; j < th/32; j++) {
-
-    //         rect1(ctx,i*32,j*32,pr,pr,"#ba1",1,1)
-    //     }
-    // }
-    // ctx.restore()
-    /**
-     *  //Pos X
-     *  W / 2 - ((side / 2) + ((j-i/2) * side)),
-        //Pos Y
-        side * (i + 1)
-     * 
-     * 
-     */
     ctx.strokeStyle="#FF1"
+    ctx.fillStyle="#555"
     ctx.moveTo(tw/2,0)
     ctx.lineTo(tw/2,th)
     let tempSize = 32
-    ctx.strokeRect(tw/2-tempSize/2,th/4,tempSize,tempSize)
-    ctx.stroke()
+    //ctx.strokeRect(tw/2-tempSize/2,th/4,tempSize,tempSize)
+    ctx.moveTo(tw/4,0)
+    ctx.lineTo(0,th)
+    ctx.lineTo(tw,th)
+    ctx.lineTo(tw/2+tw/4,0)
+    ctx.fill()
+    //ctx.stroke()
+    ctx.clip()
+    //ctx.drawImage(wallImage,200,80,32,32)
     GameObject.forEach(e=>{
-        
-        // formula
-        // e.x += (e.x-centerX)*(e.wh/e.z)
-        e.wh -=ms*50
-        e.x += (tw/2-e.x)/e.z
-        e.y -= (th+80)/e.z
-        let pr = e.wh/16
-        e.z-=ms*25
-        e.z=Math.max(e.z,0)
-        //rect1(ctx,e.x,e.y,pr,pr,"#0a0",1,1)
-        ctx.save()
-        ctx.fillStyle="#333"
-        ctx.strokeStyle="#FFF"
-        //ctx.globalAlpha=(e.z/e.wh)
-        ctx.fillRect(e.x,e.y,pr,pr)
-        ctx.strokeRect(e.x,e.y,pr,pr)
-        //ctx.fillRect(100,e.y,pr,pr)
-        ctx.restore()
-        if(e.y<-pr*1.5){
-            GameObject.splice(GameObject.indexOf(e),1)
-        }
-        //console.log("here")
+        ctx.drawImage(e.img,e.x,e.y,64,64)
+        e.y-=ms*10
     })
-    if(!GameObject.length)Add()
+    ctx.strokeRect(tw/2-tempSize/2,th/4,tempSize,tempSize)
+    // GameObject.forEach(e=>{
+        
+    //     // formula
+    //     // e.x += (e.x-centerX)*(e.wh/e.z)
+    //     e.wh -=ms*50
+    //     e.x += (tw/2-e.x)/e.z
+    //     e.y -= (th+80)/e.z
+    //     let pr = e.wh/16
+    //     e.z-=ms*25
+    //     e.z=Math.max(e.z,0)
+    //     //rect1(ctx,e.x,e.y,pr,pr,"#0a0",1,1)
+    //     ctx.save()
+    //     ctx.fillStyle="#333"
+    //     ctx.strokeStyle="#FFF"
+    //     //ctx.globalAlpha=(e.z/e.wh)
+    //     ctx.fillRect(e.x,e.y,pr,pr)
+    //     ctx.strokeRect(e.x,e.y,pr,pr)
+    //     //ctx.fillRect(100,e.y,pr,pr)
+    //     ctx.restore()
+    //     if(e.y<-pr*1.5){
+    //         GameObject.splice(GameObject.indexOf(e),1)
+    //     }
+    //     //console.log("here")
+    // })
+    // if(!GameObject.length)Add()
     ctx.restore()
 }
+
 // UI
 let adf= 0
 UI=ms=>{
@@ -259,12 +363,15 @@ UI=ms=>{
     ctx.fillStyle="#0077B6"
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     
-    GoAlpha>=2?0:FadeIn(ms)
+    //GoAlpha>=2?0:FadeIn(ms)
     ctx.save()
-    MainGame(ms)
+    
+    //MainGame(ms)
     // **************************************************
     ctx.font="15px Impact"
     ctx.fillStyle="#fff"
+    
+    
     let tw=canvasWidth/2,th=canvasHeight/2,ci=1
     let firstLineY=20,secondLineY=80,sizeW=100
     for(var k in keyStopRestartMute){
@@ -279,6 +386,8 @@ UI=ms=>{
     ctx.restore()
     ctx.save()
     ctx.fillStyle="#fff"
+    ctx.drawImage(sdfsdf.E,80,50,64,64)
+    ctx.drawImage(sdfsdf.E,80,50,64,64)
     ctx.font="30px Impact"
     let score = Pad(IntToString(Min(25,9999)))
     ctx.fillText(score,tw-firstLineY*3.5,secondLineY-firstLineY)
@@ -332,5 +441,4 @@ FontCreate=(char,color,type="#")=>{
     }
 }
 background1=(x,y,x1,y2,)=>{
-
 }

@@ -22,10 +22,19 @@ Min =(a,b)=>(a<b)?a:b;
 IntToString=a=>a.toString()
 Pad=a=>a.padStart(4,"0");
 SlopeY=(a,b,k=-20)=>a*k+b
+
+GetCanvas=a=>document.getElementById(a)
+GetContext=a=>a.getContext('2d',{
+    alpha: false,
+    desynchronized: true
+})
+
+
 // UI frame size
 let innerWidth,canvasWidth,canvasHeight,rect,resizeWindow;
 let GameObject=[]
-
+let canvas = GetCanvas('a')
+let ctx = GetContext(canvas)
 
 // inputs controls
 let key= {},key1={},checkButton=[]
