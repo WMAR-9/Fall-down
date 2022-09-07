@@ -22,8 +22,10 @@ Min =(a,b)=>(a<b)?a:b;
 IntToString=a=>a.toString()
 Pad=a=>a.padStart(4,"0");
 SlopeY=(a,b,k=-20)=>a*k+b
+localSet=(e,a)=>l.setItem(e,a)
+localGet=e=>l.getItem(e)
 
-GetCanvas=a=>document.getElementById(a)
+GetCanvas=a=>documents.getElementById(a)
 GetContext=a=>a.getContext('2d',{
     alpha: false,
     desynchronized: true
@@ -112,4 +114,4 @@ const resize = () => {
     resizeWindow=0
 };
 onresize=e=>resize()
-
+resize()

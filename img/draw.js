@@ -75,7 +75,6 @@ CreateFont=(limitLine,color,type=1)=>{
 }
 
 let sdfsdf = CreateFont(10,"#0f1",1) 
-console.log(sdfsdf.A)
 /*
     ===============================
     Transform
@@ -213,47 +212,33 @@ TextField=(str,x,y,size,color="#fff")=>{
 ScaleLine=(x,y,gh,h=200)=>{
     ctx.save()
     ctx.beginPath()
-    ctx.setLineDash([2]);
-    ctx.strokeStyle="#fff"
-    ctx.moveTo(x,y)
-    ctx.lineTo(x,y+h)
-    ctx.stroke()
-    ctx.restore()
-    ctx.save()
-    ctx.beginPath()
     ctx.lineWidth = 3
-    ctx.lineCap = 'round';
     for(var i=0,c=0;i<=h;i+=gh*2,c++){
         ctx.strokeStyle="#fff"
         if(c==5)rect1(ctx,x-gh/2,y+i,gh,gh,"#bb8",5,1)
         else rect1(ctx,x+gh/2,y+i,-gh,gh)
         ctx.stroke()
     }
-    ctx.closePath()
     ctx.restore()
 }
-EmojiToImage=(str)=>{
-    
-}
-CreateObject=_=>{
+CreateObject=color=>{
     var fontCanvas = document.createElement('canvas')
     var fontCtx = GetContext(fontCanvas),ww,hh
     ww=hh=fontCanvas.width=fontCanvas.height=32
-    fontCtx.scale(2,2)
-    fontCtx.fillStyle="#111"
-    fontCtx.fillRect(0,0,ww,hh)
+    fontCtx.scale(2,2);
+    fontCtx.fillStyle=shadeColor(color,-10);
+    fontCtx.fillRect(0,0,ww,hh);
     ww = ww/6,hh=hh/6
-    let x=y=c=0,oldWidth=0
+    let x=y=c=0,gap=0
     for(var i=0;i<9;i++){
-        fontCtx.fillStyle="#a88"
-        let tt= RandInt(ww/2)
-        fontCtx.fillRect(x+oldWidth,y,ww+tt,hh)
+        fontCtx.fillStyle=shadeColor(color,RandInt(3))
+        let appendWidth= RandInt(ww/2)
+        fontCtx.fillRect(x+gap,y,ww+appendWidth,hh)
         //fontCtx.strokeRect(x+oldWidth,y,ww+tt,hh)
-        oldWidth=tt
+        gap=appendWidth
         if(c==2){
             y+=hh
-            x=0
-            c=0
+            x=c=0
         }else{
             x+=ww
             c++
@@ -263,8 +248,7 @@ CreateObject=_=>{
     imagea.src = fontCanvas.toDataURL();
     return imagea;
 }
-let wallImage= CreateObject()
-console.log(wallImage)
+let wallImage= CreateObject("#555555")
 GameObject=[]
 AddOneLine=()=>{
     //let tw = canvasWidth/2,th=canvasHeight/2
@@ -281,12 +265,12 @@ Add=()=>{
             GameObject.push({
                 x:64*i,
                 y:64*j,
-                img:CreateObject()
+                img:CreateObject("#bb8888")
             })
         }
     }
 }
-Add()
+
 // main map
 /*
         let pr = e.z/5
@@ -308,20 +292,21 @@ MainGame=ms=>{
     ctx.moveTo(tw/2,0)
     ctx.lineTo(tw/2,th)
     let tempSize = 32
-    //ctx.strokeRect(tw/2-tempSize/2,th/4,tempSize,tempSize)
+    ctx.strokeRect(tw/2-tempSize/2,th/4,tempSize,tempSize)
     ctx.moveTo(tw/4,0)
     ctx.lineTo(0,th)
     ctx.lineTo(tw,th)
     ctx.lineTo(tw/2+tw/4,0)
     ctx.fill()
-    //ctx.stroke()
+    ctx.stroke()
     ctx.clip()
     //ctx.drawImage(wallImage,200,80,32,32)
     GameObject.forEach(e=>{
         ctx.drawImage(e.img,e.x,e.y,64,64)
         e.y-=ms*10
+        //  rect1(ctx,e.x,e.y,e.w,e.h,e.c,2,1)
     })
-    ctx.strokeRect(tw/2-tempSize/2,th/4,tempSize,tempSize)
+    //ctx.strokeRect(tw/2-tempSize/2,th/4,tempSize,tempSize)
     // GameObject.forEach(e=>{
         
     //     // formula
@@ -358,20 +343,27 @@ UI=ms=>{
     //FadeOut(ms)
     //FadeIn(ms)
     //Blink(ms)
+    let tw=canvasWidth/2,th=canvasHeight/2,ci=1
+    let firstLineY=20,secondLineY=80,sizeW=100
     ctx.fillStyle="#0077B6"
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     
     //GoAlpha>=2?0:FadeIn(ms)
     ctx.save()
-    
     //MainGame(ms)
+    //ctx.drawImage(wallImage,0,0,tw,th)
+    // GameObject.forEach(e=>{
+    //     //ctx.drawImage(e.img,e.x,e.y,64,64)
+    //     //e.y-=ms*10
+    //     rect1(ctx,e.x,e.y,e.w,e.h,e.c,2,1)
+    // })
     // **************************************************
-    ctx.font="15px Impact"
-    ctx.fillStyle="#fff"
+    // ctx.font="15px Impact"
+    // ctx.fillStyle="#fff"
+    // drawCube(tw/4,th+th/8,tw/4,tw/4,th/2,"#555555")
+    // //drawCube(tw/4,th+th/8,tw/4,tw/4,th/2,"#114131")
     
-    
-    let tw=canvasWidth/2,th=canvasHeight/2,ci=1
-    let firstLineY=20,secondLineY=80,sizeW=100
+
     for(var k in keyStopRestartMute){
         ctx.globalCompositeOperation = "lighten"
         ctx.globalAlpha = Max(key1[keyStopRestartMute[k]],.5)
@@ -397,47 +389,118 @@ UI=ms=>{
     ScaleLine(20,th/2,10,sizeW)
     bar(tw-firstLineY*2.5,secondLineY,40,sizeW,sizeW,"🧡")
     bar(tw-firstLineY,secondLineY,40,sizeW,sizeW,"🥶")
-    ctx.globalCompositeOperation="exclusion"
+    //ctx.globalCompositeOperation="exclusion"
     rect1(ctx,25,th/2+adf,2,2,"#b88",2,1)
+    rect1(ctx,32,32,32,32,"#fff",16,1)
+    // x,y  // x-(-w)-8
+    rect1(ctx,32,16,-32,-32,"#333",16,1)
+    ctx.drawImage(wallImage,32,32,32,32)
     adf += 1
     adf = Min(sizeW,adf)
     ctx.restore()
 }
 
-//rect
-rect=(x,y,w,h,c="red",r=5)=>{
-    ctx.save()
-    ctx.fillStyle=c
-    ctx.beginPath()
-    ctx.miterLimit=30
-    ctx.lineWidth=2
-    ctx.lineJoin = "miter";
-    ctx.moveTo(x, y)
-    ctx.lineTo(x+w, y)
-    ctx.arcTo(x+w+r, y, x+w+r, y+r, r)
-    ctx.lineTo(x+w+r,y+h+r)
-    ctx.arcTo(x+w+r,y+h+r+r,x+w,y+h+r+r,r)
-    ctx.lineTo(x,y+h+r+r)
-    ctx.arcTo(x-r,y+h+r+r,x-r,y+h+r,r)
-    ctx.lineTo(x-r,y+r)
-    ctx.arcTo(x-r,y,x,y,r)
-    ctx.fill()
-    ctx.restore()
-}
+// Colour adjustment function
+// Nicked from http://stackoverflow.com/questions/5560248
 
-FontCreate=(char,color,type="#")=>{
+function shadeColor(color, percent) {
+    color = color.substr(1);
+    var num = parseInt(color, 16),
+      amt = Math.round(2.55 * percent),
+      R = (num >> 16) + amt,
+      G = (num >> 8 & 0x00FF) + amt,
+      B = (num & 0x0000FF) + amt;
+    return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+}
+// cubic from https://codepen.io/AshKyd/pen/JYXEpL?editors=1010
+// Draw a cube to the specified specs
+function drawCube(x, y, wx, wy, h, color) {
+      ctx.beginPath()
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - wx, y - wx * 0.5);
+      ctx.lineTo(x - wx, y - h - wx * 0.5);
+      ctx.lineTo(x, y - h * 1);
+      ctx.lineTo(x,y)
+      ctx.fillStyle = shadeColor(color, -10);
+      ctx.strokeStyle = color;
+      ctx.stroke();
+      ctx.fill();
+      ctx.closePath()
+      ctx.beginPath()
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + wy, y - wy * 0.5);
+      ctx.lineTo(x + wy, y - h - wy * 0.5);
+      ctx.lineTo(x, y - h * 1);
+      ctx.lineTo(x,y)
+      ctx.fillStyle = shadeColor(color, 10);
+      ctx.strokeStyle = shadeColor(color, 50);
+      ctx.stroke();
+      ctx.fill();
+      ctx.closePath()
+      ctx.beginPath()
+      ctx.moveTo(x, y - h);
+      ctx.lineTo(x - wx, y - h - wx * 0.5);
+      ctx.lineTo(x - wx + wy, y - h - (wx * 0.5 + wy * 0.5));
+      ctx.lineTo(x + wy, y - h - wy * 0.5);
+      ctx.lineTo(x,y-h)
+      ctx.fillStyle = shadeColor(color, 30);
+      ctx.strokeStyle = shadeColor(color, 60);
+      ctx.stroke();
+      ctx.fill();
+      ctx.closePath()
+      
+}
+background1=_=>{
     var fontCanvas = document.createElement('canvas')
-    var fontCtx = b.getContext('2d')
-    var x=y=20
-    var s=3
-    for(var i=0;i<fontjs[6].length;i++){
-        for(var j = 0;j<fontjs[6][i].length;j++){
-            if (fontjs[6][i][j]){
-            rect(x+j*s*10,y+i*s*10,15,30)
-            }
-        }
+    var fontCtx = fontCanvas.getContext('2d')
+    fontCanvas.width=canvasWidth/2
+    fontCanvas.height=canvasHeight/2
+    console.log(canvasWidth,canvasHeight)
+    let tw = canvasWidth/2,th = canvasHeight/2
+    var radialGradient = fontCtx.createRadialGradient(tw/2,th/2, 40, tw, th, 300);
+    radialGradient.addColorStop(.3, '#1ff0');
+    radialGradient.addColorStop(.7, '#fff0');
+    radialGradient.addColorStop(.8, '#fff');
+    radialGradient.addColorStop(1, '#111');
+    fontCtx.fillStyle = radialGradient;
+    fontCtx.fillRect(0, 0, w, h);
+    //GameObject=[]
+    for(var i=0;i<tw;i+=40){
+        let height = RandIntBetween(th/4,th)
+        let color = shadeColor("#3344bb",RandIntBetween(-10,10))
+        //GameObject.push({x:i,y:th-height,w:(RandIntBetween(20,40)),h:height,c:color})
+        rect1(fontCtx,i,th-height,RandInt(64),height,color,2,1)
     }
+    var imagea = new Image();
+    imagea.src = fontCanvas.toDataURL();
+    return imagea;
 }
-background1=(x,y,x1,y2)=>{
+CreateItem=(stroke,color,type)=>{
+    var fontCanvas = document.createElement('canvas')
+    var fontCtx = fontCanvas.getContext('2d')
+    fontCanvas.width=fontCanvas.height=64
+    rect1(fontCtx,type.x,type.y,type.w,type.h,color,type.r,stroke)
+    var imagea = new Image();
+    imagea.src = fontCanvas.toDataURL();
+    return imagea;
+}
+Figure_FrameCreate=(T,Ss=8,stroke=0,S=10)=>{
+  var ar=f=[]
+  while(Ss>0){
+    f=[]
+    for(var i=0;i<S;i++){
+        //CharacterArray_1(T,Ss,0,i*.2,stroke)
+        f.push()
+    }
+    Ss-=3
+    ar.push(f)
+  }
+  return ar
+}
+// type 1 
+//  {x:64,y:32,w:-64,h:-64,r:32} star 
+//  {x:64,y:32,w:-64,h:-32,r:16} two triangle <>
 
-}
+wallImage = CreateItem(1,"#111",{x:64,y:-32,w:-64,h:64,r:16})
+resize()
+Add()
