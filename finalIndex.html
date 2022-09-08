@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            html,body{
+                height: 100%;
+                display: grid;
+                overflow: hidden;
+                background: #000;
+            }
+            #a{
+                border-radius: 10px;
+                margin: auto;
+                background: rgb(230, 19, 19);
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id=a></canvas>
+    </body>
+    <script>
+
+const windows = window
+const documents = document
+const math=Math
+const PI = math.PI
+const timer = performance
+const l = windows.localStorage
+
+Rand=a=>math.random()*a
+RandInt=a=>Rand(a)|0;
+RandIntBetween=(a,b)=>a+RandInt(b-a+1);
+Distance=(a,b)=>math.hypot(a,b);
+CollisionRect=(a,b)=>(a.x+a.w>b.x&&b.x+b.w>a.x&&a.y+a.h>b.y&&b.y+b.h>a.y)?1:0
+Max=(a,b)=>a>b?a:b;
+Min =(a,b)=>(a<b)?a:b;
+IntToString=a=>a.toString()
+Pad=a=>a.padStart(4,"0");
+SlopeY=(a,b,k=-20)=>a*k+b
+
+localSet=(e,a)=>l.setItem(e,a)
+localGet=e=>l.getItem(e)
+
+GetCanvas=a=>documents.getElementById(a)
+GetContextAlpha=a=>a.getContext('2d',{
+    alpha: false,
+    desynchronized: true
+})
+GetContext=a=>a.getContext('2d')
+CreateElement=a=>documents.createElement('canvas')
+
+// UI frame size
+let innerWidth,canvasWidth,canvasHeight,mouseCanvas,resizeWindow,tw,th;
+
+let canvas = GetCanvas('a')
+let ctx = GetContextAlpha(canvas)
+let GamePlayObject = [],BackgroundMoveObject=[]
+
+// inputs controls
+let key= {},key1={},checkButton=[]
+let keyStopRestartMute=['r','m','p']
+// initial key dict
+keyStopRestartMute.forEach(e=>key1[e]=0)
+
+console.log(key1)
+
+InitailLoopDict=(k,initialValue)=>{
+    for (const i in k)k[i]=initialValue
+    return k
+}
+onblur=e=>key1=InitailLoopDict(key1,0)
+onfocus=e=>key1.p=1
+
+onmousedown=e=>{
+    // let as = e.button==0?e.type=="mouseup"?"b":"a":"c"
+    if(!e.button){
+        e.pageX>innerWidth/2?key.s=1:key.a=1
+        let x= e.clientX - mouseCanvas.left
+        let y = e.clientY - mouseCanvas.top
+        let h=w=1
+        console.log(x/2,y/2)
+        checkButton.forEach((e,i)=>{
+            if(CollisionRect(e,{x:x/2,y:y/2,w,h})){
+                key1[keyStopRestartMute[i]]=!key1[keyStopRestartMute[i]]
+                console.log("onmousedown and up",key1)
+            }
+            console.log("onmousedown",CollisionRect(e,{x:x/2,y:y/2,w,h}))
+        })
+    }
+    console.log("onmousedown and up",checkButton[0])
+    console.log("onmousedown and up",key1)
+}
+onmouseup=e=>!e.button?key=InitailLoopDict(key,0):0;
+ontouchstart=e=>{
+    var x = e.changedTouches[0].pageX;
+    if(x>innerWidth/2){
+        key.s=1
+    }else{
+        key.a=1
+    }
+}
+
+ontouchend=e=>key=InitailLoopDict(key,0);
+
+// p:pause , R:restart , M:mute sound
+
+onkeydown=e=>{
+    let i = e.key
+    if(keyStopRestartMute.includes(i))key1[i]=!key1[i]
+    else key[i]=1;
+}
+onkeyup=e=>key[e.key]=0
+
+// Canvas resizing
+const resize = () => {
+    const unit = 32,iw=windows.innerWidth,ih=windows.innerHeight;
+    const size = Min((Min(iw, ih) / unit)|0, 24);
+    tw = canvasWidth=canvas.width = size * unit;
+    th = canvasHeight=canvas.height = size * unit + size*4;
+    ctx.imageSmoothingEnabled = false;
+    tw = canvasWidth/2
+    th = canvasHeight/2
+    innerWidth=iw
+    mouseCanvas = canvas.getBoundingClientRect();
+    checkButton=[]
+    resizeWindow=0
+};
+onresize=e=>resize()
+resize()
+
+
+// draw rect 
+
+// Colour adjustment function
+// Nicked from http://stackoverflow.com/questions/5560248
+
+shadeColor=(color, percent)=>{
+    color = color.substr(1);
+    var num = parseInt(color, 16),
+      amt = Math.round(2.55 * percent),
+      R = (num >> 16) + amt,
+      G = (num >> 8 & 0x00FF) + amt,
+      B = (num & 0x0000FF) + amt;
+    return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+}
+rect1=(ctx,x,y,w,h,c="red",r=5,a=0,s="black")=>{
+    ctx.save()
+    ctx.fillStyle=c
+    ctx.strokeStyle=s
+    ctx.beginPath()
+    ctx.miterLimit=30
+    ctx.lineWidth=2
+    ctx.moveTo(x, y)
+    ctx.lineTo(x+w, y)
+    ctx.arcTo(x+w+r, y, x+w+r, y+r, r)
+    ctx.lineTo(x+w+r,y+h+r)
+    ctx.arcTo(x+w+r,y+h+r+r,x+w,y+h+r+r,r)
+    ctx.lineTo(x,y+h+r+r)
+    ctx.arcTo(x-r,y+h+r+r,x-r,y+h+r,r)
+    ctx.lineTo(x-r,y+r)
+    ctx.arcTo(x-r,y,x,y,r)
+    a?ctx.fill():ctx.stroke()
+    ctx.restore()
+}
+
+CreateWall=color=>{
+    var fontCanvas = CreateElement()
+    var fontCtx = GetContext(fontCanvas),ww,hh
+    ww=hh=fontCanvas.width=fontCanvas.height=32
+    fontCtx.scale(2,2);
+    fontCtx.fillStyle=shadeColor(color,-10);
+    fontCtx.fillRect(0,0,ww,hh);
+    ww = ww/6,hh=hh/6
+    let x=y=c=0,gap=0
+    for(var i=0;i<9;i++){
+        fontCtx.fillStyle=shadeColor(color,RandInt(3))
+        let appendWidth= RandInt(ww/2)
+        fontCtx.fillRect(x+gap,y,ww+appendWidth,hh)
+        //fontCtx.strokeRect(x+oldWidth,y,ww+tt,hh)
+        gap=appendWidth
+        if(c==2){
+            y+=hh
+            x=c=0
+        }else{
+            x+=ww
+            c++
+        }
+    }
+    var imagea = new Image();
+    imagea.src = fontCanvas.toDataURL();
+    return imagea;
+}
+
+
+class Vector{
+    constructor(x,y,w=32,h=32){
+      this.x = x
+      this.y = y
+      this.h= h
+      this.w= w
+    }
+    set(v){
+      this.x = v.x
+      this.y = v.y
+      return this;
+    }
+    add(v){
+      this.x+=v.x
+      this.y+=v.y
+    }
+    addOne(v){
+      this.x+=v
+      this.y+=v
+    }
+    addX(v){
+        this.x+=v.x
+    }
+    zero(){
+      this.x=this.y=0
+    }
+    substract(v){
+      this.x -= v.x
+      this.y -= v.y
+      return this;
+    }
+    multiply(s){
+      let A = s/Distance(this.x,this.y)
+      this.x *= A
+      this.y *= A
+    }
+    dot(a){
+      this.x*=a
+      this.y*=a
+      return this
+    }
+    clone(){
+      return new Vector(this.x,this.y,this.w,this.h)
+    }
+    norm(v){
+      let tx = v.x-this.x,ty =v.y-this.y
+      let dist = Distance(tx,ty)
+      return new Vector(tx/dist,ty/dist)
+    }
+    less(mw,mh){
+      return this.x<mw||this.y<mh
+    }
+    collisionRect(a){
+        return CollisionRect(this,a)
+    }
+}
+// initial game config
+let PlayerConfig={
+    speed:1,
+    maxSpeed:32,
+    targetPos:new Vector(tw/2,-th,2,2)
+}
+class GameObject{
+    constructor(x,y,o,w=32,h=32){
+      //poisition
+      this.pos = new Vector(x,y,w,h)
+      this.VectorXY = new Vector(0,0,w,h)
+      this.w = w
+      this.h = h
+      this.p = o
+      this.frameTime = 0
+      GamePlayObject.push(this)
+    }
+    render(ms){
+        this.draw()
+        this.update(ms)
+    }
+    draw(){}
+    update(ms){}
+    remove(){
+      GamePlayObject.splice(GamePlayObject.indexOf(this),1);
+    }
+}
+class Faller extends GameObject{
+    constructor(x,y,w,h,f){
+        super(x,y,1,w,h)
+        this.D = 0 // dierction 0 1 2 ,decide the image
+        this.frames = f
+        this.tw =tw
+        this.life = 100
+    }
+    draw(){
+        rect1(ctx,this.pos.x,this.pos.y,this.w,this.h,"#5f6",5,1)
+    }
+    move(ms){
+        let move = ms*200
+        this.VectorXY.zero()
+        // keyboard in or mouse in
+        if(key.a||key.A||key.z||key.Z){
+            this.VectorXY.substract(new Vector(move,0))
+            this.D=1
+            console.log(this.D)
+        }//left
+
+        if(key.S||key.s||key.X||key.x){
+            this.VectorXY.add(new Vector(move,0))
+            this.D=2
+        }//right
+        this.oldPos = this.pos.clone()
+        this.pos.addX(this.VectorXY)
+        if(this.pos.x>tw-tw/4){
+            this.pos = this.oldPos.substract(this.VectorXY)
+        }
+        if(this.pos.x<tw/8){
+            this.pos = this.oldPos.substract(this.VectorXY)
+        }
+    }
+    update(ms){
+        this.move(ms)
+        GamePlayObject.forEach(e=>{
+            if(e.p>=2){
+                if(e.pos.collisionRect(this.pos)){
+                    this.life-=20
+                    this.life=Max(this.life,0)
+                    // blood effect
+                    this.life<=0?this.destory():0
+                }
+            }
+        })
+    }
+    destory(){
+        this.remove()
+    }
+}
+class Blood extends GameObject{
+    constructor(x,y,w,c){
+        super(x,y,0,w,w)
+        this.dx = x+(Rand(1)<.5?3:-3)*Rand(3)*.5
+        this.dy = y+(Rand(1)<.5?3:-3)*Rand(3)*.5
+        this.c = c
+    }
+    draw(){
+        rect1(ctx,this.x,this.y,1,1,this.c,this.w,1)
+    }
+    update(ms){
+
+        this.frameTime+=ms
+        this.frameTime>3?this.remove():0
+        this.dy -= ms*10
+        this.x -= this.dx
+        this.y -= this.dy
+        this.w -= .05
+    }
+}
+class cloud extends GameObject{
+    constructor(x,y,w,h){
+        super(x,y,0,w,h)
+        this.initialX = this.x
+        this.initialY = this.y
+    }
+    draw(){
+
+    }
+    update(ms){
+
+    }
+    destory(){
+        this.remove()
+    }
+}
+class Item extends GameObject{
+    constructor(x,y,w,h,f,type){
+        super(x,y,type,w,h)
+        this.initialX = this.pos.x
+        //animation
+        this.frameArray = f
+        this.curFrame = f[0]
+        this.frameTime = 0
+        this.th = th
+    }
+    draw(){
+        rect1(ctx,this.pos.x,this.pos.y,1,1,"#35fa12",this.w,1)
+        //ctx.drawImage(this.curFrame,this.pos.x,this.pos.y,this.pos.w,this.pos.h)
+    }
+    update(ms){
+        let l = this.frameArray.length
+        this.frameTime += ms
+        this.curFrame = this.frameArray[(this.frameTime%l)|0]
+        let gap = RandInt(Rand(1)<.3?-50:50)
+        this.VectorXY = this.pos.norm(new Vector(this.initialX+gap,-this.th))
+        this.VectorXY.dot(3)
+        this.pos.add(this.VectorXY)
+
+        if(this.pos.less(0,-64)){
+            this.destory()
+        }
+        this.frameTime = this.frameTime>2?0:this.frameTime
+    }
+    destory(){
+        this.remove()
+    }
+}
+class BuildingWall{
+    constructor(x,y,w,h,c="#bb8888"){
+        this.pos = new Vector(x,y,w,h)
+        this.VectorXY=this.pos.clone()
+        this.initialX = x
+        this.initialY = canvasHeight/2
+        this.f = CreateWall(c)
+        this.th = th
+        BackgroundMoveObject.push(this)
+    }
+    render(ms){
+        this.draw()
+        this.update(ms)
+    }
+    draw(){
+        ctx.drawImage(this.f,this.pos.x,this.pos.y,this.pos.w,this.pos.h)
+    }m
+    update(ms){
+        this.VectorXY = this.pos.norm(new Vector(this.pos.x,-this.th,1,1))
+        
+        //this.VectorXY.dot(Min(PlayerConfig.speed,PlayerConfig.maxSpeed))
+        this.VectorXY.dot(2)
+        PlayerConfig.speed = this.VectorXY.y
+        this.pos.add(this.VectorXY)
+        if(this.pos.less(0,-this.pos.h)){
+            //level up
+            if(key1.m){
+                this.newlevel()
+            }
+            this.loop()
+        }
+    }
+    loop(){
+        this.pos.set({x:this.initialX,y:this.th})
+    }
+    newlevel(){
+        this.f = CreateWall("#1AF1F6")
+    }
+}
+background=_=>{
+    var fontCanvas = CreateElement()
+    var fontCtx = GetContext(fontCanvas)
+    fontCanvas.width=tw
+    fontCanvas.height=th
+    var radialGradient = fontCtx.createRadialGradient(tw,0, 40, tw, 0, th/10);
+    radialGradient.addColorStop(.3, '#FFE261');
+    radialGradient.addColorStop(.7, '#F3CD05');
+    radialGradient.addColorStop(.8, '#F49F05');
+    radialGradient.addColorStop(1, '#FFF8C8');
+    fontCtx.beginPath()
+    fontCtx.fillStyle = radialGradient;
+    fontCtx.fillRect(0, 0, tw, th);
+    //fontCtx.globalCompositeOperation = "screen"
+    //GameObjectTest=[]
+    for(var i=0;i<tw;i+=40){
+        let height = RandIntBetween(th/4,th-th/8)
+        let color = shadeColor("#36688D",RandIntBetween(-20,20))
+        rect1(fontCtx,RandIntBetween(0,tw),th-height,RandInt(64),height,color,8,1)
+    }
+    var imagea = new Image();
+    imagea.src = fontCanvas.toDataURL();
+    return imagea;
+}
+let back = background()
+
+//building 
+BackgroundView=_=>{
+    ctx.drawImage(back,0,0,tw,th)
+}
+
+BuildingWallInitial=()=>{
+    for(let j =0;j<th/28;j++){
+        for (let i = 0; i < tw/32; i++) {
+            new BuildingWall(32*i,32*j,32,32)
+        }
+    }
+}
+
+GameWorldInit=(L)=>{
+    GamePlayObject=[]
+    BackgroundMoveObject=[]
+    BuildingWallInitial()
+    new Faller(tw/2,th/4,32,32,10)
+    for(var i =0;i<50;i++){
+        new Item(i*32+RandInt(i*32),th+RandInt(i*32),10,32,1,2)
+    }
+}
+// speed max 32 
+let lastUpdate = timer.now();
+Update=()=>{
+    const now = timer.now();
+    const deltaMs = now - lastUpdate;
+    const delta = deltaMs / 1000;
+    lastUpdate = now;
+    BackgroundView()
+    // if playing >
+    if(1){
+        ctx.save()
+        ctx.strokeStyle="#FF1"
+        ctx.fillStyle="#555"
+        ctx.beginPath()
+        ctx.moveTo(tw/4,0)
+        ctx.lineTo(tw/4,th)
+        let tempSize = 32
+        //ctx.strokeRect(tw/4-tempSize/,th/8,tempSize,tempSize)
+        ctx.moveTo(tw/8,0)
+        ctx.lineTo(0,th)
+        ctx.lineTo(tw,th)
+        ctx.lineTo(tw-tw/7,0)
+        ctx.fill()
+        //ctx.stroke()
+        ctx.clip()
+        BackgroundMoveObject.forEach(e=>{
+            e.render(delta)
+        })
+        ctx.restore()
+    }
+    GamePlayObject.forEach(e=>{
+        e.render(delta)
+    })
+}
+MainLoop=_=>{
+    ctx.clearRect(0,0,canvasWidth,canvasHeight)
+    ctx.save()
+    ctx.scale(2,2)
+    tw = canvasWidth/2
+    th = canvasHeight/2
+    Update()
+    ctx.restore()
+    requestAnimationFrame(MainLoop)
+}
+GameWorldInit()
+MainLoop()
+</script>
+</html>

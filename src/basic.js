@@ -34,7 +34,7 @@ GetContext=a=>a.getContext('2d',{
 
 // UI frame size
 let innerWidth,canvasWidth,canvasHeight,rect,resizeWindow;
-let GameObject=[]
+let GameObjectTest=[]
 let canvas = GetCanvas('a')
 let ctx = GetContext(canvas)
 
@@ -48,8 +48,11 @@ InitailLoopDict=(k,initialValue)=>{
     for (const i in k)k[i]=initialValue
     return k
 }
-onblur=onfocus=e=>key1=InitailLoopDict(key1,e.type=="blur"?0:1)
-
+onblur=e=>{
+    key1=InitailLoopDict(key1,1)
+    key1.r=0
+}
+onfocus=e=>key1=InitailLoopDict(key1,0)
 onmousedown=e=>{
     // let as = e.button==0?e.type=="mouseup"?"b":"a":"c"
     if(!e.button){

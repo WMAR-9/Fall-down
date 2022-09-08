@@ -249,11 +249,11 @@ CreateObject=color=>{
     return imagea;
 }
 let wallImage= CreateObject("#555555")
-GameObject=[]
+GameObjectTest=[]
 AddOneLine=()=>{
     //let tw = canvasWidth/2,th=canvasHeight/2
     //tw/32
-    GameObject.push()
+    GameObjectTest.push()
 }
 Add=()=>{
     //let tw = canvasWidth/2,th=canvasHeight/2
@@ -262,7 +262,7 @@ Add=()=>{
     for(let j =0;j<th/32;j++){
         for (let i = 0; i < tw/32; i++) {
             // 
-            GameObject.push({
+            GameObjectTest.push({
                 x:64*i,
                 y:64*j,
                 img:CreateObject("#bb8888")
@@ -301,13 +301,13 @@ MainGame=ms=>{
     ctx.stroke()
     ctx.clip()
     //ctx.drawImage(wallImage,200,80,32,32)
-    GameObject.forEach(e=>{
+    GameObjectTest.forEach(e=>{
         ctx.drawImage(e.img,e.x,e.y,64,64)
         e.y-=ms*10
         //  rect1(ctx,e.x,e.y,e.w,e.h,e.c,2,1)
     })
     //ctx.strokeRect(tw/2-tempSize/2,th/4,tempSize,tempSize)
-    // GameObject.forEach(e=>{
+    // GameObjectTest.forEach(e=>{
         
     //     // formula
     //     // e.x += (e.x-centerX)*(e.wh/e.z)
@@ -327,11 +327,11 @@ MainGame=ms=>{
     //     //ctx.fillRect(100,e.y,pr,pr)
     //     ctx.restore()
     //     if(e.y<-pr*1.5){
-    //         GameObject.splice(GameObject.indexOf(e),1)
+    //         GameObjectTest.splice(GameObjectTest.indexOf(e),1)
     //     }
     //     //console.log("here")
     // })
-    // if(!GameObject.length)Add()
+    // if(!GameObjectTest.length)Add()
     ctx.restore()
 }
 
@@ -350,9 +350,9 @@ UI=ms=>{
     
     //GoAlpha>=2?0:FadeIn(ms)
     ctx.save()
-    //MainGame(ms)
+    MainGame(ms)
     //ctx.drawImage(wallImage,0,0,tw,th)
-    // GameObject.forEach(e=>{
+    // GameObjectTest.forEach(e=>{
     //     //ctx.drawImage(e.img,e.x,e.y,64,64)
     //     //e.y-=ms*10
     //     rect1(ctx,e.x,e.y,e.w,e.h,e.c,2,1)
@@ -366,7 +366,7 @@ UI=ms=>{
 
     for(var k in keyStopRestartMute){
         ctx.globalCompositeOperation = "lighten"
-        ctx.globalAlpha = Max(key1[keyStopRestartMute[k]],.5)
+        ctx.globalAlpha = Max(1-key1[keyStopRestartMute[k]],.5)
         let x = tw-22*ci-5,y=firstLineY,h=12,w=18
         resizeWindow?0:checkButton.push({x,y:y-10,w,h})
         ctx.fillText(ci-1?ci-2?"⏯️":"🎧":"🏠",x,y)
@@ -464,11 +464,11 @@ background1=_=>{
     radialGradient.addColorStop(1, '#111');
     fontCtx.fillStyle = radialGradient;
     fontCtx.fillRect(0, 0, w, h);
-    //GameObject=[]
+    //GameObjectTest=[]
     for(var i=0;i<tw;i+=40){
         let height = RandIntBetween(th/4,th)
         let color = shadeColor("#3344bb",RandIntBetween(-10,10))
-        //GameObject.push({x:i,y:th-height,w:(RandIntBetween(20,40)),h:height,c:color})
+        //GameObjectTest.push({x:i,y:th-height,w:(RandIntBetween(20,40)),h:height,c:color})
         rect1(fontCtx,i,th-height,RandInt(64),height,color,2,1)
     }
     var imagea = new Image();
@@ -499,8 +499,12 @@ Figure_FrameCreate=(T,Ss=8,stroke=0,S=10)=>{
 }
 // type 1 
 //  {x:64,y:32,w:-64,h:-64,r:32} star 
-//  {x:64,y:32,w:-64,h:-32,r:16} two triangle <>
+//  {x:32,y:0,w:0,h:0,r:32}     circle
+//  {x:64,y:32,w:-64,h:-32,r:16}   two triangle <>
+//  {x:16,y:32,w:32,h:-22,r:7}     long wall
+//  {x:32,y:0,w:-32,h:-32,r:32}    rotate wall
+//  {x:32,y:16,w:-32,h:-32,r:10}  <^> wall ,many wall
 
-wallImage = CreateItem(1,"#111",{x:64,y:-32,w:-64,h:64,r:16})
+wallImage = CreateItem(1,"#111",{x:32,y:16,w:-32,h:-32,r:16})
 resize()
 Add()
