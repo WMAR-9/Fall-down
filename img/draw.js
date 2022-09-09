@@ -162,6 +162,7 @@ FadeIn=ms=>{
 rect1=(ctx,x,y,w,h,c="red",r=5,a=0)=>{
     ctx.save()
     ctx.fillStyle=c
+    ctx.strokeStyle=c
     ctx.beginPath()
     ctx.miterLimit=30
     ctx.lineWidth=2
@@ -270,7 +271,9 @@ Add=()=>{
         }
     }
 }
+Item=()=>{
 
+}
 // main map
 /*
         let pr = e.z/5
@@ -376,8 +379,8 @@ UI=ms=>{
     ctx.restore()
     ctx.save()
     ctx.fillStyle="#fff"
-    ctx.drawImage(sdfsdf.E,80,50,64,64)
-    ctx.drawImage(sdfsdf.E,80,50,64,64)
+    // ctx.drawImage(sdfsdf.E,80,50,64,64)
+    // ctx.drawImage(sdfsdf.E,80,50,64,64)
     ctx.font="30px Impact"
     let score = Pad(IntToString(Min(25,9999)))
     ctx.fillText(score,tw-firstLineY*3.5,secondLineY-firstLineY)
@@ -391,12 +394,13 @@ UI=ms=>{
     bar(tw-firstLineY,secondLineY,40,sizeW,sizeW,"🥶")
     //ctx.globalCompositeOperation="exclusion"
     rect1(ctx,25,th/2+adf,2,2,"#b88",2,1)
-    rect1(ctx,32,32,32,32,"#fff",16,1)
+    rect1(ctx,32,32,32,32,"#fff",0,1)
     // x,y  // x-(-w)-8
-    rect1(ctx,32,16,-32,-32,"#333",16,1)
-    ctx.drawImage(wallImage,32,32,32,32)
-    adf += 1
-    adf = Min(sizeW,adf)
+
+    //rect1(ctx,32,16,-32,-32,"#333",16,1)
+    ctx.drawImage(wallImage[(adf%wallImage.length)|0],32,32,32,32)
+    adf += .5
+    //adf = Min(sizeW,adf)
     ctx.restore()
 }
 
@@ -475,11 +479,16 @@ background1=_=>{
     imagea.src = fontCanvas.toDataURL();
     return imagea;
 }
-CreateItem=(stroke,color,type)=>{
+CreateItem=(stroke,color,type,angle=0)=>{
     var fontCanvas = document.createElement('canvas')
     var fontCtx = fontCanvas.getContext('2d')
     fontCanvas.width=fontCanvas.height=64
+    let halfh = 32
+    fontCtx.translate(halfh,halfh);
+    fontCtx.rotate(PI*angle);
+    fontCtx.translate(-halfh,-halfh);
     rect1(fontCtx,type.x,type.y,type.w,type.h,color,type.r,stroke)
+    fontCtx.setTransform(1, 0, 0, 1, 0, 0);
     var imagea = new Image();
     imagea.src = fontCanvas.toDataURL();
     return imagea;
@@ -504,7 +513,36 @@ Figure_FrameCreate=(T,Ss=8,stroke=0,S=10)=>{
 //  {x:16,y:32,w:32,h:-22,r:7}     long wall
 //  {x:32,y:0,w:-32,h:-32,r:32}    rotate wall
 //  {x:32,y:16,w:-32,h:-32,r:10}  <^> wall ,many wall
-
-wallImage = CreateItem(1,"#111",{x:32,y:16,w:-32,h:-32,r:16})
+//  {x:64,y:32,w:-64,h:-64,r:30}
+// CreateItem(1,"#111",{x:64,y:32,w:-64,h:-64,r:30+i},i*.1))
+// CreateItem(1,shadeColor("#faf",i),{x:64,y:32-i,w:-64,h:-64,r:32+i},i*.7
+// 
+const roe =(a,frames)=>{
+    let aasdf = []
+    for(var i=0;i<frames;i++){
+        aasdf.push(CreateItem(a[0],shadeColor(a[1],i),{
+            x:a[2][0]+i*a[3][0],
+            y:a[2][1]+i*a[3][1],
+            w:a[2][2]+i*a[3][2],
+            h:a[2][3]+i*a[3][3],
+            r:a[2][4]+i*a[3][4]},i*a[4]))
+    }
+    return aasdf
+}
+wallImage = roe([1,"#bb8888",[64,32,-64,-64,32],[0,-1,0,0,1],0],30)
+// ---------------------------------------------------------------------
+// rotate 
+// up to              
+// a                 roe([1,"#bb8888",[64,32,-64,-32,32],[0,-1,0,-1,-.1],.1],30)
+// long wall         roe([1,"#bb8888",[16,16,32,-32,14],[0,0,0,0,0],.1],30)
+// star to circle    roe([1,"#bb8888",[64,32,-64,-64,32],[0,-1,0,0,1],.1],30)
+// equl to circle    roe([1,"#bb8888",[32,0,-32,0,32],[0,0,0,0,.1],.1],20)
+// iron ball         roe([1,"#bb8888",[64,32,-64,-64,30],[0,0,0,0,0],.1],20)
+// fans              roe([1,"#bb8888",[64,0,-64,-64,64],[0,0,0,0,0],.1],10)
+// ----------------------------------------------------------------------
+// non rotate
+// star to big roe([1,"#bb8888",[64,32,-64,-64,32],[0,-1,0,0,1],0],30)
+// iron ball shake roe([1,"#bb8888",[64,32,-64,-64,30],[0,0,0,0,0],.5],20)
+// wall roe([1,"#bb8888",[16,16,32,-38,16],[0,0,0,0,0],0],1)
 resize()
 Add()

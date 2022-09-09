@@ -11,7 +11,6 @@
             #a{
                 border-radius: 10px;
                 margin: auto;
-                background: rgb(230, 19, 19);
             }
         </style>
     </head>
@@ -52,9 +51,14 @@ CreateElement=a=>documents.createElement('canvas')
 // UI frame size
 let innerWidth,canvasWidth,canvasHeight,mouseCanvas,resizeWindow,tw,th;
 
+//test speed 
+let count =1
 let canvas = GetCanvas('a')
 let ctx = GetContextAlpha(canvas)
 let GamePlayObject = [],BackgroundMoveObject=[]
+
+let BadItemImage  = []
+let GoodItemImage = []
 
 // inputs controls
 let key= {},key1={},checkButton=[]
@@ -103,11 +107,18 @@ ontouchstart=e=>{
 ontouchend=e=>key=InitailLoopDict(key,0);
 
 // p:pause , R:restart , M:mute sound
-
+let adfdadsf = [2,4,8,16,32]
+let index = 1
 onkeydown=e=>{
     let i = e.key
     if(keyStopRestartMute.includes(i))key1[i]=!key1[i]
     else key[i]=1;
+    if(i=="m"){
+        
+        count=adfdadsf[index]
+        index++
+        console.log(count)
+    }
 }
 onkeyup=e=>key[e.key]=0
 
@@ -143,10 +154,10 @@ shadeColor=(color, percent)=>{
       B = (num & 0x0000FF) + amt;
     return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
 }
-rect1=(ctx,x,y,w,h,c="red",r=5,a=0,s="black")=>{
+rect1=(ctx,x,y,w,h,c="red",r=5,a=0)=>{
     ctx.save()
     ctx.fillStyle=c
-    ctx.strokeStyle=s
+    ctx.strokeStyle=c
     ctx.beginPath()
     ctx.miterLimit=30
     ctx.lineWidth=2
@@ -162,7 +173,7 @@ rect1=(ctx,x,y,w,h,c="red",r=5,a=0,s="black")=>{
     a?ctx.fill():ctx.stroke()
     ctx.restore()
 }
-
+// Game darw  Wall
 CreateWall=color=>{
     var fontCanvas = CreateElement()
     var fontCtx = GetContext(fontCanvas),ww,hh
@@ -190,7 +201,33 @@ CreateWall=color=>{
     imagea.src = fontCanvas.toDataURL();
     return imagea;
 }
-
+CreateItem=(stroke,color,type,angle=0)=>{
+    var fontCanvas = CreateElement()
+    var fontCtx = GetContext(fontCanvas)
+    fontCanvas.width=fontCanvas.height=64
+    let halfh = 32
+    fontCtx.translate(halfh,halfh);
+    fontCtx.rotate(PI*angle);
+    fontCtx.translate(-halfh,-halfh);
+    rect1(fontCtx,type.x,type.y,type.w,type.h,color,type.r,stroke)
+    fontCtx.setTransform(1, 0, 0, 1, 0, 0);
+    var imagea = new Image();
+    imagea.src = fontCanvas.toDataURL();
+    return imagea;
+}
+CreateItemDraw=(a,frames)=>{
+    //     [1,"#00000",[64,32,-64,-64,30],[.5,,,1],.1]
+    let framesArray = []
+    for(var i=0;i<frames;i++){
+        framesArray.push(CreateItem(a[0],shadeColor(a[1],1),{
+            x:a[2][0]+i*a[3][0],
+            y:a[2][1]+i*a[3][1],
+            w:a[2][2]+i*a[3][2],
+            h:a[2][3]+i*a[3][3],
+            r:a[2][4]+i*a[3][4]},i*a[4]))
+    }
+    return framesArray
+}
 
 class Vector{
     constructor(x,y,w=32,h=32){
@@ -302,10 +339,10 @@ class Faller extends GameObject{
         }//right
         this.oldPos = this.pos.clone()
         this.pos.addX(this.VectorXY)
-        if(this.pos.x>tw-tw/4){
+        if(this.pos.x>tw-tw/4.5){
             this.pos = this.oldPos.substract(this.VectorXY)
         }
-        if(this.pos.x<tw/8){
+        if(this.pos.x<tw/8.5){
             this.pos = this.oldPos.substract(this.VectorXY)
         }
     }
@@ -373,24 +410,36 @@ class Item extends GameObject{
         this.th = th
     }
     draw(){
-        rect1(ctx,this.pos.x,this.pos.y,1,1,"#35fa12",this.w,1)
-        //ctx.drawImage(this.curFrame,this.pos.x,this.pos.y,this.pos.w,this.pos.h)
+        //rect1(ctx,this.pos.x,this.pos.y,1,1,"#35fa12",this.w,1)
+        ctx.drawImage(this.curFrame,this.pos.x,this.pos.y,this.pos.w,this.pos.h)
     }
     update(ms){
         let l = this.frameArray.length
-        this.frameTime += ms
+        this.frameTime ++
         this.curFrame = this.frameArray[(this.frameTime%l)|0]
-        let gap = RandInt(Rand(1)<.3?-50:50)
-        this.VectorXY = this.pos.norm(new Vector(this.initialX+gap,-this.th))
-        this.VectorXY.dot(3)
+        let gap = RandInt(50)
+        let targetX  = this.initialX+gap
+        let targetPosX = this.pos.x>tw/2?Min(tw-tw/3.5,targetX)-this.w:Max(tw/4,targetX)
+        this.VectorXY = this.pos.norm(new Vector(targetPosX,-this.th))
+        this.VectorXY.dot(index)
+        
         this.pos.add(this.VectorXY)
+        GamePlayObject.forEach(e=>{
+            if(e.p==3){
+            if(e.pos.collisionRect(this.pos)){
+                if(e.p==2){
 
-        if(this.pos.less(0,-64)){
+                }
+            }
+            }
+        })
+        if(this.pos.less(0,-this.pos.h)){
             this.destory()
         }
-        this.frameTime = this.frameTime>2?0:this.frameTime
+        this.frameTime = this.frameTime>l*2?0:this.frameTime
     }
     destory(){
+        //new Item(this.initialX,this.th,this.w,this.h,this.frameArray,this.p)
         this.remove()
     }
 }
@@ -410,21 +459,22 @@ class BuildingWall{
     }
     draw(){
         ctx.drawImage(this.f,this.pos.x,this.pos.y,this.pos.w,this.pos.h)
-    }m
+    }
     update(ms){
         this.VectorXY = this.pos.norm(new Vector(this.pos.x,-this.th,1,1))
         
         //this.VectorXY.dot(Min(PlayerConfig.speed,PlayerConfig.maxSpeed))
-        this.VectorXY.dot(2)
+        this.VectorXY.dot(count)
         PlayerConfig.speed = this.VectorXY.y
-        this.pos.add(this.VectorXY)
-        if(this.pos.less(0,-this.pos.h)){
+        
+        if(this.pos.less(0,-this.pos.h+count)){
             //level up
             if(key1.m){
                 this.newlevel()
             }
             this.loop()
         }
+        this.pos.add(this.VectorXY)
     }
     loop(){
         this.pos.set({x:this.initialX,y:this.th})
@@ -433,6 +483,7 @@ class BuildingWall{
         this.f = CreateWall("#1AF1F6")
     }
 }
+//background view 1 ~ 2
 background=_=>{
     var fontCanvas = CreateElement()
     var fontCtx = GetContext(fontCanvas)
@@ -471,18 +522,149 @@ BuildingWallInitial=()=>{
         }
     }
 }
+// UI Bar textfield
+TextField=(str,x,y,size,color="#fff")=>{
+    ctx.fillStyle=color
+    ctx.font=size+"px Impact"
+    ctx.fillText(str,x,y)
+}
+bar=(x,y,h,live,ml,str)=>{
+    ctx.save()
+	let cy = h/ml*live,ty=y
+    rect1(ctx,x,y+=(h-cy),5,cy,"#1fc",5,1)
+    rect1(ctx,x,ty,5,h,"#000")
+ 	for(var i=0;i<live;i+=25){
+    	rect1(ctx,x,ty+(h-h/ml*i),8,1,"#a11",1,1)
+    }
+    ctx.fillStyle="#0F0"
+    ctx.font="20px Impact"
+    ctx.fillText(str,x-11,ty+h+10*2)
+    ctx.restore()
+}
+ScaleLine=(x,y,gh,h=200)=>{
+    ctx.save()
+    ctx.beginPath()
+    ctx.lineWidth = 3
+    for(var i=0,c=0;i<=h;i+=gh*2,c++){
+        ctx.strokeStyle="#fff"
+        if(c==5)rect1(ctx,x-gh/2,y+i,gh,gh,"#bb8",5,1)
+        else rect1(ctx,x+gh/2,y+i,-gh,gh)
+        ctx.stroke()
+    }
+    ctx.restore()
+}
+let adf= 0
+GameUIView=ms=>{
+    ctx.save()
+    ctx.beginPath()
+    let ci =1,firstLineY=20,secondLineY=80,sizeW=100
+    for(var k in keyStopRestartMute){
+        ctx.globalCompositeOperation = "lighten"
+        ctx.globalAlpha = Max(1-key1[keyStopRestartMute[k]],.5)
+        let x = tw-20*ci-5,y=firstLineY,h=12,w=18
+        resizeWindow?0:checkButton.push({x,y:y-10,w,h})
+        ctx.fillText(ci-1?ci-2?"⏯️":"🎧":"🏠",x,y)
+        ci++
+    }
+    ctx.restore()
+    resizeWindow=1
+    ctx.save()
+    ctx.beginPath()
+    ctx.fillStyle="#fff"
+    // ctx.drawImage(sdfsdf.E,80,50,64,64)
+    // ctx.drawImage(sdfsdf.E,80,50,64,64)
+    ctx.font="30px Impact"
+    let score = Pad(IntToString(Min(25,9999)))
+    ctx.fillText(score,tw-firstLineY*3.5,secondLineY-firstLineY)
+    //ctx.strokeRect(tw-firstLineY*3.1,secondLineY-40,50,25)
+    TextField("Meter",10,firstLineY+5,15)
+    TextField(((adf*10*ms)|0)+"  /m",15,firstLineY*2,10)
+    TextField("G-Speed",10,firstLineY*3,15)
+    TextField(((count)|0)+"  /g",15,firstLineY*4,10)
+    ScaleLine(20,th/2,10,sizeW)
+    bar(tw-firstLineY,secondLineY,40,sizeW,sizeW,"🧡")
+    //bar(tw-firstLineY,secondLineY,40,sizeW,sizeW,"🥶")
+    //ctx.globalCompositeOperation="exclusion"
+    //rect1(ctx,25,th/2+adf,2,2,"#b88",2,1)
+    //rect1(ctx,32,32,32,32,"#fff",16,1)
+    // x,y  // x-(-w)-8
+    ///rect1(ctx,32,16,-32,-32,"#333",16,1)
+    //ctx.drawImage(wallImage,32,32,32,32)
+    adf += 1
+    adf = Min(sizeW,adf)
+    ctx.restore()
+}
+let iron_ball_shake = CreateItemDraw([1,"#111111",[64,32,-64,-64,30],[0,0,0,0,0],.5],20)
+    let long_wall = CreateItemDraw([1,"#111111",[16,16,32,-38,16],[0,0,0,0,0],0],1)
+    let iron_ball_rotate = CreateItemDraw([0,"#111111",[64,32,-64,-64,30],[0,0,0,0,0],.5],20)
+    let fix_arrow = CreateItemDraw([0,"#111111",[64,32,-64,-64,32],[0,-1,0,0,1],0],30)
+    let ciclre = CreateItemDraw([0,"#111111",[64,32,-64,-64,32],[0,-1,0,0,1],.1],30)
+    let fansa = CreateItemDraw([1,"#111111",[64,0,-64,-64,64],[0,0,0,0,0],.1],10)
+    let adsf = CreateItemDraw([0,"#111111",[64,32,-64,-32,32],[0,-1,0,-1,-.1],.1],30)
+    BadItemImage = [iron_ball_shake,long_wall,iron_ball_rotate,fix_arrow,ciclre,fansa,adsf]
 
-GameWorldInit=(L)=>{
+let map = _=>{
+    // -----------------|
+    let randomnumbers = new Set, ans;
+    while (randomnumbers.size < 6) {    
+        randomnumbers.add(Math.floor(
+            Math.random() * 6));
+    }
+    return ans = [...randomnumbers]
+}
+ItemGenerator=l=>{
+    // level linear up
+    // bad item appear 
+
+    let badIt = [1,2,3,4,5,6]
+    let randAppearNum = Min(RandInt(l),5)
+    let randAppearChance=map()
+    let maxRandBadImageLength = Min(badIt.length,l)
+    randAppearChance.forEach((e,i)=>{
+        if(e&&e<=randAppearNum){
+            if(level==3){
+                new Item(i*tw/6,th+32,32,32,BadItemImage[item],2)
+            }
+            // let item = RandInt(maxRandBadImageLength)
+            // if(item==2){
+            //     new Item(i*tw/6,th+32,32,32,BadItemImage[item],2)
+            // }else{
+            //     new Item(i*tw/6,th+32,32,32,BadItemImage[item],2)
+            // }
+        }
+    })
+    // for(var i=0;i<=randAppearNum;i++){
+    //     let maxRandBadImageLength = Min(badIt.length,l)
+    //     let randX = Rand(tw-32)
+    //     upGap = randX
+    //     new Item(i*64,th+32,32,32,BadItemImage[RandInt(maxRandBadImageLength)],2)
+    // }
+}
+GameWorldInit=l=>{
     GamePlayObject=[]
     BackgroundMoveObject=[]
     BuildingWallInitial()
-    new Faller(tw/2,th/4,32,32,10)
-    for(var i =0;i<50;i++){
-        new Item(i*32+RandInt(i*32),th+RandInt(i*32),10,32,1,2)
-    }
+    // 
+    // let iron_ball_shake = CreateItemDraw([0,"#f1f380",[64,32,-64,-64,30],[0,0,0,0,0],.5],20)
+    // let long_wall = CreateItemDraw([0,"#f1f380",[16,16,32,-38,16],[0,0,0,0,0],0],1)
+    // let iron_ball_rotate = CreateItemDraw([0,"#f1f380",[64,32,-64,-64,30],[0,0,0,0,0],.5],20)
+    // let fix_arrow = CreateItemDraw([0,"#f1f380",[64,32,-64,-64,32],[0,-1,0,0,1],0],30)
+    // let ciclre = CreateItemDraw([0,"#f1f380",[64,32,-64,-64,32],[0,-1,0,0,1],.1],30)
+    // let fansa = CreateItemDraw([1,"#f1f380",[64,0,-64,-64,64],[0,0,0,0,0],.1],10)
+    // let adsf = CreateItemDraw([0,"#f1f380",[64,32,-64,-32,32],[0,-1,0,-1,-.1],.1],30)
+    
+    BadItemImage = [iron_ball_shake,long_wall,iron_ball_rotate,fix_arrow,ciclre,fansa,adsf]
+    new Faller(tw/2,th/8,32,32,10)
+
+    
+    // for(var i =0;i<50;i++){
+    //     new Item(i*32+RandInt(i*32),th+RandInt(i*32),32,32,BadItemImage[RandInt(BadItemImage.length)],2)
+    // }
+    
 }
 // speed max 32 
 let lastUpdate = timer.now();
+let distanceY = 0
 Update=()=>{
     const now = timer.now();
     const deltaMs = now - lastUpdate;
@@ -495,8 +677,6 @@ Update=()=>{
         ctx.strokeStyle="#FF1"
         ctx.fillStyle="#555"
         ctx.beginPath()
-        ctx.moveTo(tw/4,0)
-        ctx.lineTo(tw/4,th)
         let tempSize = 32
         //ctx.strokeRect(tw/4-tempSize/,th/8,tempSize,tempSize)
         ctx.moveTo(tw/8,0)
@@ -510,10 +690,24 @@ Update=()=>{
             e.render(delta)
         })
         ctx.restore()
+        GamePlayObject.forEach(e=>{
+            if(e.pos.y<=th){
+                e.render(delta)
+            }else{
+                e.update(delta)
+            }
+        })
+        distanceY+=index
+        if(distanceY>=128){
+           ItemGenerator(index)
+           console.log(index)
+           // ItemGenerator(level)
+           distanceY=0
+        }
+        GameUIView(delta)
+    }else{
+        // start view
     }
-    GamePlayObject.forEach(e=>{
-        e.render(delta)
-    })
 }
 MainLoop=_=>{
     ctx.clearRect(0,0,canvasWidth,canvasHeight)
