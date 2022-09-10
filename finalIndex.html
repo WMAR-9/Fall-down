@@ -29,6 +29,7 @@ const l = windows.localStorage
 Rand=a=>math.random()*a
 RandInt=a=>Rand(a)|0;
 RandIntBetween=(a,b)=>a+RandInt(b-a+1);
+Abs=a=>math.abs(a)
 Distance=(a,b)=>math.hypot(a,b);
 CollisionRect=(a,b)=>(a.x+a.w>b.x&&b.x+b.w>a.x&&a.y+a.h>b.y&&b.y+b.h>a.y)?1:0
 Max=(a,b)=>a>b?a:b;
@@ -40,6 +41,8 @@ SlopeY=(a,b,k=-20)=>a*k+b
 localSet=(e,a)=>l.setItem(e,a)
 localGet=e=>l.getItem(e)
 
+
+// mini same function
 GetCanvas=a=>documents.getElementById(a)
 GetContextAlpha=a=>a.getContext('2d',{
     alpha: false,
@@ -47,6 +50,11 @@ GetContextAlpha=a=>a.getContext('2d',{
 })
 GetContext=a=>a.getContext('2d')
 CreateElement=a=>documents.createElement('canvas')
+CanvasToImage=a=>{
+    var imagea = new Image();
+    imagea.src = a.toDataURL();
+    return imagea;
+}
 
 // UI frame size
 let innerWidth,canvasWidth,canvasHeight,mouseCanvas,resizeWindow,tw,th;
@@ -58,7 +66,8 @@ let ctx = GetContextAlpha(canvas)
 let GamePlayObject = [],BackgroundMoveObject=[]
 
 let BadItemImage  = []
-let GoodItemImage = []
+
+let SunToMoon = 0
 
 // inputs controls
 let key= {},key1={},checkButton=[]
@@ -171,6 +180,7 @@ rect1=(ctx,x,y,w,h,c="red",r=5,a=0)=>{
     ctx.lineTo(x-r,y+r)
     ctx.arcTo(x-r,y,x,y,r)
     a?ctx.fill():ctx.stroke()
+    ctx.closePath()
     ctx.restore()
 }
 // Game darw  Wall
@@ -197,9 +207,7 @@ CreateWall=color=>{
             c++
         }
     }
-    var imagea = new Image();
-    imagea.src = fontCanvas.toDataURL();
-    return imagea;
+    return CanvasToImage(fontCanvas)
 }
 CreateItem=(stroke,color,type,angle=0)=>{
     var fontCanvas = CreateElement()
@@ -211,9 +219,7 @@ CreateItem=(stroke,color,type,angle=0)=>{
     fontCtx.translate(-halfh,-halfh);
     rect1(fontCtx,type.x,type.y,type.w,type.h,color,type.r,stroke)
     fontCtx.setTransform(1, 0, 0, 1, 0, 0);
-    var imagea = new Image();
-    imagea.src = fontCanvas.toDataURL();
-    return imagea;
+    return CanvasToImage(fontCanvas)
 }
 CreateItemDraw=(a,frames)=>{
     //     [1,"#00000",[64,32,-64,-64,30],[.5,,,1],.1]
@@ -228,6 +234,47 @@ CreateItemDraw=(a,frames)=>{
     }
     return framesArray
 }
+
+CreateCloud=(size,fc)=>{
+    var fontCanvas = CreateElement()
+    var fontCtx = GetContext(fontCanvas)
+    fontCtx.height = 50
+    fontCtx.width = size*18+20
+    fontCtx.beginPath();
+    fontCtx.moveTo(20, 20);
+    fontCtx.fillStyle = fc
+    for(var i=1;i<size;i++){
+        fontCtx.quadraticCurveTo(20+i*10, 10, 20+i*20, 20);
+        //ctx.quadraticCurveTo(20+i*10, 50, 20+i*20, 50);
+    }
+    fontCtx.quadraticCurveTo(20+i*20, 45, 20+(i-1)*18, 40);
+    fontCtx.moveTo(20,20)
+    fontCtx.quadraticCurveTo(10, 30, 30, 40);
+    for(var i=1;i<size;i++){
+        fontCtx.quadraticCurveTo(20+i*10, 40+10, 20+i*18, 40);
+        //ctx.quadraticCurveTo(20+i*10, 50, 20+i*20, 50);
+    }
+    fontCtx.fill()
+    fontCtx.stroke();
+    return CanvasToImage(fontCanvas)
+}
+
+cloudDrawImageFrame=_=>{
+    let temp = {},i,j,a=["#fff","#58B","#BBC"]
+    for(j=0;j<3;j++){
+        temp[j]=[]
+        for(i=3;i<6;i++){
+            temp[j].push(CreateCloud(i,a[j]))
+        }
+    }
+    return temp
+}
+let cloudDrawImage = cloudDrawImageFrame()
+// {
+//     1:[],//white 
+//     2:[],//blue
+//     3:[],//dark
+// }
 
 class Vector{
     constructor(x,y,w=32,h=32){
@@ -356,51 +403,63 @@ class Faller extends GameObject{
         GamePlayObject.forEach(e=>{
             if(e.p>=2){
                 if(e.pos.collisionRect(this.pos)){
-                    this.life-=20
-                    this.life=Max(this.life,0)
-                    // blood effect
-                    this.life<=0?this.destory():0
+                    // this.life-=20
+                    // this.life=Max(this.life,0)
+                    // // blood effect
+                    // this.life<=0?this.destory():0
+                    
+                    this.destory()
                 }
             }
         })
     }
     destory(){
-        this.remove()
+        for (var i = 0; i < 5; i++) {
+            new Blood(this.pos.x,this.pos.y,5,"#f00")
+        }
+        
+        //this.remove()
     }
 }
 class Blood extends GameObject{
     constructor(x,y,w,c){
         super(x,y,0,w,w)
-        this.dx = x+(Rand(1)<.5?3:-3)*Rand(3)*.5
-        this.dy = y+(Rand(1)<.5?3:-3)*Rand(3)*.5
+        this.dx = (Rand(1)<.5?3:-3)*Rand(3)*.7
+        this.dy = (Rand(1)<.5?3:-3)*Rand(3)*.7
         this.c = c
     }
     draw(){
-        rect1(ctx,this.x,this.y,1,1,this.c,this.w,1)
+        rect1(ctx,this.pos.x,this.pos.y,2,2,this.c,this.pos.w,1)
     }
     update(ms){
-
         this.frameTime+=ms
-        this.frameTime>3?this.remove():0
-        this.dy -= ms*10
-        this.x -= this.dx
-        this.y -= this.dy
-        this.w -= .05
+        this.frameTime>3||this.pos.w<.3?this.remove():0
+        this.dy -= ms*0.9
+        this.pos.x -= this.dx
+        this.pos.y -= this.dy
+        this.pos.w -= .05
+        this.pos.w = Max(this.pos.w,1)
     }
 }
-class cloud extends GameObject{
-    constructor(x,y,w,h){
-        super(x,y,0,w,h)
-        this.initialX = this.x
-        this.initialY = this.y
+class Cloud extends GameObject{
+    constructor(x,y,f){
+        super(x,y,0,0,0)
+        this.frames = f
     }
     draw(){
-
-    }
+        ctx.drawImage(this.frames,this.pos.x,this.pos.y,this.frames.width,this.frames.height)
+    }   
     update(ms){
-
+        this.VectorXY = this.pos.norm(new Vector(this.pos.x,-th))
+        this.VectorXY.dot(index)
+        this.pos.add(this.VectorXY)
+        if(this.pos.less(0,-this.frames.height)){
+            this.destory()
+        }
     }
     destory(){
+        let cl = cloudDrawImage[SunToMoon]
+        new Cloud(this.pos.x,th+Rand(300),cl[RandInt(cl.length)])
         this.remove()
     }
 }
@@ -428,18 +487,8 @@ class Item extends GameObject{
         this.VectorXY = this.pos.norm(new Vector(targetPosX,-this.th))
         this.VectorXY.dot(index)
         this.pos.add(this.VectorXY)
-        this.pos.w -= (this.pos.maxWidth)/Distance(0,this.th*2)*this.pos.y*ms
+        this.pos.w -= (this.pos.maxWidth)/Distance(0,this.th*2)*Abs(this.VectorXY.y)
         this.pos.w = Max(this.pos.w,this.pos.maxWidth/2)
-        //this.pos.size({y:-this.th,w:32},this.th)
-        GamePlayObject.forEach(e=>{
-            if(e.p==3){
-            if(e.pos.collisionRect(this.pos)){
-                if(e.p==2){
-
-                }
-            }
-            }
-        })
         if(this.pos.less(0,-this.pos.h)){
             this.destory()
         }
@@ -511,9 +560,7 @@ background=_=>{
         let color = shadeColor("#36688D",RandIntBetween(-20,20))
         rect1(fontCtx,RandIntBetween(0,tw),th-height,RandInt(64),height,color,8,1)
     }
-    var imagea = new Image();
-    imagea.src = fontCanvas.toDataURL();
-    return imagea;
+    return CanvasToImage(fontCanvas)
 }
 let back = background()
 
@@ -522,12 +569,18 @@ BackgroundView=_=>{
     ctx.drawImage(back,0,0,tw,th)
 }
 
-BuildingWallInitial=()=>{
+BuildingWallInitial=_=>{
     for(let j =0;j<th/28;j++){
         for (let i = 0; i < tw/32; i++) {
             new BuildingWall(32*i,32*j,32,32)
         }
     }
+    let cl = cloudDrawImage[SunToMoon]
+    for(let i=0;i<10;i++){
+        let a = i%2?RandIntBetween(tw-tw/8,tw):RandIntBetween(0,tw/18)-Rand(10)
+        new Cloud(a,th+Rand(300),cl[RandInt(cl.length)])
+    }
+
 }
 // UI Bar textfield
 TextField=(str,x,y,size,color="#fff")=>{
@@ -602,13 +655,13 @@ GameUIView=ms=>{
     ctx.restore()
 }
 let iron_ball_shake = CreateItemDraw([1,"#111111",[64,32,-64,-64,30],[0,0,0,0,0],.5],20)
-    let long_wall = CreateItemDraw([1,"#111111",[16,16,32,-38,16],[0,0,0,0,0],0],1)
-    let iron_ball_rotate = CreateItemDraw([0,"#111111",[64,32,-64,-64,30],[0,0,0,0,0],.5],20)
-    let fix_arrow = CreateItemDraw([0,"#111111",[64,32,-64,-64,32],[0,-1,0,0,1],0],30)
-    let ciclre = CreateItemDraw([0,"#111111",[64,32,-64,-64,32],[0,-1,0,0,1],.1],30)
-    let fansa = CreateItemDraw([1,"#111111",[64,0,-64,-64,64],[0,0,0,0,0],.1],10)
-    let adsf = CreateItemDraw([0,"#111111",[64,32,-64,-32,32],[0,-1,0,-1,-.1],.1],30)
-    BadItemImage = [iron_ball_shake,long_wall,iron_ball_rotate,fix_arrow,ciclre,fansa,adsf]
+let long_wall = CreateItemDraw([1,"#111111",[16,16,32,-38,16],[0,0,0,0,0],0],1)
+let iron_ball_rotate = CreateItemDraw([0,"#111111",[64,32,-64,-64,30],[0,0,0,0,0],.5],20)
+let fix_arrow = CreateItemDraw([0,"#111111",[64,32,-64,-64,32],[0,-1,0,0,1],0],30)
+let ciclre = CreateItemDraw([0,"#111111",[64,32,-64,-64,32],[0,-1,0,0,1],.1],30)
+let fansa = CreateItemDraw([1,"#111111",[64,0,-64,-64,64],[0,0,0,0,0],.1],10)
+let adsf = CreateItemDraw([0,"#111111",[64,32,-64,-32,32],[0,-1,0,-1,-.1],.1],30)
+BadItemImage = [iron_ball_shake,long_wall,iron_ball_rotate,fix_arrow,ciclre,fansa,adsf]
 
 AppearArry = _=>{
     // -----------------|
@@ -630,8 +683,8 @@ ItemGenerator=l=>{
     let randAppearChance=AppearArry()
     let maxRandBadImageLength = Min(badIt.length,l)
     // level 3 6 9
-    //if(!(index%3)&&index){
-    if(1){
+    if(!(index%3)&&index){
+    // if(1){
         let curX = 0
         let appearLength = AppearDist(randAppearChance)
         WallResize(appearLength).forEach((e,i)=>{
@@ -642,29 +695,15 @@ ItemGenerator=l=>{
             }
             curX+=e
         })
+    }else{
+    // level 1 2 4 5 7 8
+        randAppearChance.forEach((e,i)=>{
+            if(e&&e<=randAppearNum){
+                let item = RandInt(maxRandBadImageLength)
+                new Item(i*tw/6,th+32,48,48,BadItemImage[item],2)
+            }
+        })
     }
-    // level 1 4 7
-    // level 2 5 8 
-    // randAppearChance.forEach((e,i)=>{
-    //     if(e&&e<=randAppearNum){
-    //         if(index==3){
-    //             AppearDist(randAppearChance)
-    //             new Item(i*tw/6,th+32,32,32,BadItemImage[1],2)
-    //         }
-    //         // let item = RandInt(maxRandBadImageLength)
-    //         // if(item==2){
-    //         //     new Item(i*tw/6,th+32,32,32,BadItemImage[item],2)
-    //         // }else{
-    //         //     new Item(i*tw/6,th+32,32,32,BadItemImage[item],2)
-    //         // }
-    //     }
-    // })
-    // for(var i=0;i<=randAppearNum;i++){
-    //     let maxRandBadImageLength = Min(badIt.length,l)
-    //     let randX = Rand(tw-32)
-    //     upGap = randX
-    //     new Item(i*64,th+32,32,32,BadItemImage[RandInt(maxRandBadImageLength)],2)
-    // }
 }
 GameWorldInit=l=>{
     GamePlayObject=[]
@@ -681,8 +720,6 @@ GameWorldInit=l=>{
     
     BadItemImage = [iron_ball_shake,long_wall,iron_ball_rotate,fix_arrow,ciclre,fansa,adsf]
     new Faller(tw/2,th/8,tw/16,th/16,10)
-
-    
     // for(var i =0;i<50;i++){
     //     new Item(i*32+RandInt(i*32),th+RandInt(i*32),32,32,BadItemImage[RandInt(BadItemImage.length)],2)
     // }
@@ -715,7 +752,7 @@ Update=()=>{
         BackgroundMoveObject.forEach(e=>{
             e.render(delta)
         })
-        
+        ctx.restore()
         GamePlayObject.forEach(e=>{
             if(e.pos.y<=th){
                 e.render(delta)
@@ -723,9 +760,9 @@ Update=()=>{
                 e.update(delta)
             }
         })
-        ctx.restore()
+        
         distanceY+=index
-        if(distanceY>=128*2){
+        if(distanceY>=128+index*20){
            ItemGenerator(index)
            console.log(index)
            // ItemGenerator(level)
