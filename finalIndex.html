@@ -235,6 +235,7 @@ class Vector{
       this.y = y
       this.h= h
       this.w= w
+      this.maxWidth=w
     }
     set(v){
       this.x = v.x
@@ -277,6 +278,10 @@ class Vector{
       let tx = v.x-this.x,ty =v.y-this.y
       let dist = Distance(tx,ty)
       return new Vector(tx/dist,ty/dist)
+    }
+    size(v,th){
+        this.w =(this.maxWidth-v.w)/(th-v.y)*this.w
+        //return new Vector(this.x,this.y,this.w*this.y,this.h)
     }
     less(mw,mh){
       return this.x<mw||this.y<mh
@@ -417,13 +422,15 @@ class Item extends GameObject{
         let l = this.frameArray.length
         this.frameTime ++
         this.curFrame = this.frameArray[(this.frameTime%l)|0]
-        let gap = RandInt(50)
+        let gap = 1
         let targetX  = this.initialX+gap
-        let targetPosX = this.pos.x>tw/2?Min(tw-tw/3.5,targetX)-this.w:Max(tw/4,targetX)
+        let targetPosX = this.pos.x>=tw/2?Min(tw-tw/7,this.initialX)-this.w:Max(tw/4,targetX)
         this.VectorXY = this.pos.norm(new Vector(targetPosX,-this.th))
         this.VectorXY.dot(index)
-        
         this.pos.add(this.VectorXY)
+        this.pos.w -= (this.pos.maxWidth)/Distance(0,this.th*2)*this.pos.y*ms
+        this.pos.w = Max(this.pos.w,this.pos.maxWidth/2)
+        //this.pos.size({y:-this.th,w:32},this.th)
         GamePlayObject.forEach(e=>{
             if(e.p==3){
             if(e.pos.collisionRect(this.pos)){
@@ -603,36 +610,55 @@ let iron_ball_shake = CreateItemDraw([1,"#111111",[64,32,-64,-64,30],[0,0,0,0,0]
     let adsf = CreateItemDraw([0,"#111111",[64,32,-64,-32,32],[0,-1,0,-1,-.1],.1],30)
     BadItemImage = [iron_ball_shake,long_wall,iron_ball_rotate,fix_arrow,ciclre,fansa,adsf]
 
-let map = _=>{
+AppearArry = _=>{
     // -----------------|
     let randomnumbers = new Set, ans;
     while (randomnumbers.size < 6) {    
-        randomnumbers.add(Math.floor(
-            Math.random() * 6));
+        randomnumbers.add(RandInt(6));
     }
     return ans = [...randomnumbers]
 }
+AppearDist=a=>a.join("").replace("0","#0#").split("#").filter(e=>e)
+WallResize=a=>a.map((e)=>e!="0"?e.length*tw/8:tw/6)
+
 ItemGenerator=l=>{
     // level linear up
     // bad item appear 
 
     let badIt = [1,2,3,4,5,6]
     let randAppearNum = Min(RandInt(l),5)
-    let randAppearChance=map()
+    let randAppearChance=AppearArry()
     let maxRandBadImageLength = Min(badIt.length,l)
-    randAppearChance.forEach((e,i)=>{
-        if(e&&e<=randAppearNum){
-            if(level==3){
-                new Item(i*tw/6,th+32,32,32,BadItemImage[item],2)
+    // level 3 6 9
+    //if(!(index%3)&&index){
+    if(1){
+        let curX = 0
+        let appearLength = AppearDist(randAppearChance)
+        WallResize(appearLength).forEach((e,i)=>{
+            if(appearLength[i]!="0"){
+                new Item(curX,th+32,e,32,BadItemImage[1],2)
+            }else{
+                curX+=tw/6
             }
-            // let item = RandInt(maxRandBadImageLength)
-            // if(item==2){
-            //     new Item(i*tw/6,th+32,32,32,BadItemImage[item],2)
-            // }else{
-            //     new Item(i*tw/6,th+32,32,32,BadItemImage[item],2)
-            // }
-        }
-    })
+            curX+=e
+        })
+    }
+    // level 1 4 7
+    // level 2 5 8 
+    // randAppearChance.forEach((e,i)=>{
+    //     if(e&&e<=randAppearNum){
+    //         if(index==3){
+    //             AppearDist(randAppearChance)
+    //             new Item(i*tw/6,th+32,32,32,BadItemImage[1],2)
+    //         }
+    //         // let item = RandInt(maxRandBadImageLength)
+    //         // if(item==2){
+    //         //     new Item(i*tw/6,th+32,32,32,BadItemImage[item],2)
+    //         // }else{
+    //         //     new Item(i*tw/6,th+32,32,32,BadItemImage[item],2)
+    //         // }
+    //     }
+    // })
     // for(var i=0;i<=randAppearNum;i++){
     //     let maxRandBadImageLength = Min(badIt.length,l)
     //     let randX = Rand(tw-32)
@@ -654,7 +680,7 @@ GameWorldInit=l=>{
     // let adsf = CreateItemDraw([0,"#f1f380",[64,32,-64,-32,32],[0,-1,0,-1,-.1],.1],30)
     
     BadItemImage = [iron_ball_shake,long_wall,iron_ball_rotate,fix_arrow,ciclre,fansa,adsf]
-    new Faller(tw/2,th/8,32,32,10)
+    new Faller(tw/2,th/8,tw/16,th/16,10)
 
     
     // for(var i =0;i<50;i++){
@@ -682,14 +708,14 @@ Update=()=>{
         ctx.moveTo(tw/8,0)
         ctx.lineTo(0,th)
         ctx.lineTo(tw,th)
-        ctx.lineTo(tw-tw/7,0)
+        ctx.lineTo(tw-tw/8,0)
         ctx.fill()
         //ctx.stroke()
         ctx.clip()
         BackgroundMoveObject.forEach(e=>{
             e.render(delta)
         })
-        ctx.restore()
+        
         GamePlayObject.forEach(e=>{
             if(e.pos.y<=th){
                 e.render(delta)
@@ -697,8 +723,9 @@ Update=()=>{
                 e.update(delta)
             }
         })
+        ctx.restore()
         distanceY+=index
-        if(distanceY>=128){
+        if(distanceY>=128*2){
            ItemGenerator(index)
            console.log(index)
            // ItemGenerator(level)
